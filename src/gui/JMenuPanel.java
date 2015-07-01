@@ -1,5 +1,8 @@
 package gui;
 
+import InformationManagement.Question;
+import QuestionMethods.QMethCards;
+import QuestionMethods.QuestionMethod;
 import utilities.Imprend;
 import utilities.Load;
 
@@ -7,6 +10,8 @@ import javax.swing.*;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -18,7 +23,7 @@ import java.util.ResourceBundle;
 public class JMenuPanel extends JNavPanel {
 
 
-    public JMenuPanel(Imprend imprend) {
+    public JMenuPanel(final Imprend imprend) {
         Locale currentLocale = Locale.getDefault();
         ResourceBundle general = ResourceBundle.getBundle("resources.language.GeneralBundle", currentLocale);
 
@@ -32,9 +37,9 @@ public class JMenuPanel extends JNavPanel {
         JButton btnStart = new JButton(arrowHead);
         JButton btnAdd = new JButton(plus);
         JButton btnEdit = new JButton(pen);
-        JComboBox<String> combo = new JComboBox<>();
+        final JComboBox<String> combo = new JComboBox<>();
         JScrollPane scrlPane = new JScrollPane();
-        JList<String> lstCards = new JList<>();
+        final JList<String> lstCards = new JList<>();
         DefaultListModel<String> lstModel = new DefaultListModel<>();
 
         combo.addItem("Karten");
@@ -42,7 +47,7 @@ public class JMenuPanel extends JNavPanel {
         combo.addItem("Repetition");
 
         String[] stacks = Load.getAllObjectPathsIn(imprend.settings.getCardsDir());
-        for (int i = 1; i < stacks.length; i++) {
+        for (int i = 0; i < stacks.length; i++) {
             lstModel.addElement(stacks[i]);
         }
 
@@ -61,6 +66,39 @@ public class JMenuPanel extends JNavPanel {
 
         setLayout(new BorderLayout());
         add(pnlStacks, BorderLayout.LINE_START);
+
+        //ActionListener
+        ActionListener goStart = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                QuestionMethod questionMethod;
+                if(combo.getSelectedItem().equals("Karten")) {
+                    questionMethod = new QMethCards(lstCards.getSelectedValue());
+                    imprend.JCardPanel_initNewLearning(questionMethod);
+                } else {
+                    //add other QuestionMethod types here
+                }
+                imprend.switchPanel(imprend.strPnlCard);
+            }
+        };
+
+        ActionListener goAdd = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+
+            }
+        };
+
+        ActionListener goEdit = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+
+            }
+        };
+
+        btnStart.addActionListener(goStart);
+        btnAdd.addActionListener(goAdd);
+        btnEdit.addActionListener(goEdit);
 
     }
 

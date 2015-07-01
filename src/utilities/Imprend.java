@@ -1,9 +1,7 @@
 package utilities;
 
-import gui.JBarPanel;
-import gui.JMenuPanel;
-import gui.JNavPanel;
-import gui.JSettingsPanel;
+import QuestionMethods.QuestionMethod;
+import gui.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -24,10 +22,12 @@ public class Imprend {
 
     private JPanel pnlMain;
     private JBarPanel pnlBar;
+    private JCardPanel pnlCard;
 
     //all Strings for the names of each panel for the cardLayout
-    public String strPnlMenu = "JMenuPanel";
-    public String strPnlSettings = "JSettingsPanel";
+    public final String strPnlMenu = "JMenuPanel";
+    public final String strPnlSettings = "JSettingsPanel";
+    public final String strPnlCard = "JCardPanel";
 
     private static String currentPanel;     //name of the current panel beeing visible
     private static Map<String, JNavPanel> panels = new HashMap<>();    //map of all panels and their names, to associate them with each other
@@ -46,23 +46,26 @@ public class Imprend {
 
         imprend.pnlBar = new JBarPanel(imprend);
 
+        //initialize the panels
         imprend.pnlMain = new JPanel();
         JMenuPanel pnlMenu = new JMenuPanel(imprend);
         JSettingsPanel pnlSettings = new JSettingsPanel(imprend);
+        imprend.pnlCard = new JCardPanel(imprend);
 
 
         imprend.pnlMain.setLayout(imprend.cd);
         imprend.addPanelToMain(pnlMenu, imprend.strPnlMenu);
         imprend.addPanelToMain(pnlSettings, imprend.strPnlSettings);
+        imprend.addPanelToMain(imprend.pnlCard, imprend.strPnlCard);
 
 
-        imprend.frame.setSize(1920,1080);
+        imprend.frame.setSize(1920,1000);
         imprend.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         imprend.frame.setVisible(true);
         imprend.frame.setLayout(new BorderLayout());
         imprend.frame.add(imprend.pnlBar, BorderLayout.PAGE_START);
         imprend.frame.add(imprend.pnlMain, BorderLayout.CENTER);
-        switchPanel(pnlMenu.getName());
+        imprend.switchPanel(pnlMenu.getName());
 
     }
 
@@ -71,9 +74,14 @@ public class Imprend {
         panels.put(strPnl, pnl);
     }
 
-    public static void switchPanel(String strPanel) {
+    public void switchPanel(String strPanel) {
         imprend.cd.show(imprend.pnlMain, strPanel);
         currentPanel = strPanel;
+    }
+
+    public void JCardPanel_initNewLearning(QuestionMethod questionMethod) {
+        //This method only is there to allow the pnlMenu to call the initNewLearning()-Method from the pnlCard
+        imprend.pnlCard.initNewLearning(questionMethod);
     }
 
     public void back() {
