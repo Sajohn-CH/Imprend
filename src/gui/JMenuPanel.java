@@ -1,19 +1,16 @@
 package gui;
 
-import InformationManagement.Question;
-import QuestionMethods.QMethCards;
-import QuestionMethods.QuestionMethod;
+import questionMethods.QMethCards;
+import questionMethods.QuestionMethod;
 import utilities.Imprend;
 import utilities.Load;
+import utilities.UTF8Control;
 
 import javax.swing.*;
-import javax.swing.event.ListDataEvent;
-import javax.swing.event.ListDataListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.Locale;
 import java.util.ResourceBundle;
 
 /**
@@ -24,8 +21,8 @@ public class JMenuPanel extends JNavPanel {
 
 
     public JMenuPanel(final Imprend imprend) {
-        Locale currentLocale = Locale.getDefault();
-        ResourceBundle general = ResourceBundle.getBundle("resources.language.GeneralBundle", currentLocale);
+        final ResourceBundle general = ResourceBundle.getBundle(imprend.settings.getResourceBundles()+".GeneralBundle", imprend.settings.getLocale(), new UTF8Control());
+        final ResourceBundle menu = ResourceBundle.getBundle(imprend.settings.getResourceBundles()+".JMenuPanelBundle", imprend.settings.getLocale(), new UTF8Control());
 
         ImageIcon arrowHead = new ImageIcon("resources" + File.separator + "icons" + File.separator + "ArrowHead.png");
         ImageIcon plus = new ImageIcon("resources" + File.separator + "icons" + File.separator + "Plus.png");
@@ -42,9 +39,9 @@ public class JMenuPanel extends JNavPanel {
         final JList<String> lstCards = new JList<>();
         DefaultListModel<String> lstModel = new DefaultListModel<>();
 
-        combo.addItem("Karten");
-        combo.addItem("Mocktest");
-        combo.addItem("Repetition");
+        combo.addItem(general.getString("QMethCards"));
+        combo.addItem(general.getString("QMethRepetition"));
+        combo.addItem(general.getString("QMethMockTest"));
 
         String[] stacks = Load.getAllObjectPathsIn(imprend.settings.getCardsDir());
         for (int i = 0; i < stacks.length; i++) {
@@ -72,13 +69,18 @@ public class JMenuPanel extends JNavPanel {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 QuestionMethod questionMethod;
-                if(combo.getSelectedItem().equals("Karten")) {
+                if(lstCards.getSelectedValue() == null) {
+                    System.out.println("noStack");
+                    JOptionPane.showMessageDialog(null, menu.getString("MsgNoStackChoosen"), menu.getString("MsgNoStackChoosenShort"), JOptionPane.ERROR_MESSAGE);
+                    return;
+                }else if (combo.getSelectedItem().equals(general.getString("QMethCards"))) {
+                    //QuestionMethod Cards
                     questionMethod = new QMethCards(lstCards.getSelectedValue());
                     imprend.JCardPanel_initNewLearning(questionMethod);
+                    imprend.switchPanel(imprend.strPnlCard);
                 } else {
                     //add other QuestionMethod types here
                 }
-                imprend.switchPanel(imprend.strPnlCard);
             }
         };
 

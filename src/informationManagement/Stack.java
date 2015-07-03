@@ -1,10 +1,9 @@
-package InformationManagement;
+package informationManagement;
 
 import utilities.Load;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Date;
 
 /**
  * Created by samuel on 30.06.15.

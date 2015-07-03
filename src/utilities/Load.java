@@ -1,18 +1,15 @@
 package utilities;
 
-import InformationManagement.Information;
-import InformationManagement.InformationGroup;
-import InformationManagement.Question;
+import informationManagement.Information;
+import informationManagement.InformationGroup;
+import informationManagement.Question;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import javax.sound.midi.MidiDevice;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
-import java.lang.annotation.Documented;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -60,6 +57,7 @@ public class Load {
             for(int i = 0; i < nList.getLength(); i++) {
                 Element element1 = (Element) nList.item(i);
                 InformationGroup infoGroup = new InformationGroup();
+                infoGroup.setComment(element1.getAttribute("comment"));
                 //Create for every Object in the xml-File a corresponding Object (Information or Question) and add it to the InformationGroup infoGroup
                 for(int j = 0; j < element1.getElementsByTagName("Information").getLength(); j++) {
                     Element element2 = (Element) element1.getElementsByTagName("Information").item(j);
@@ -68,6 +66,10 @@ public class Load {
                         Information info = new Information();
                         info.setInformation(element2.getTextContent());
                         info.setDate(new Date(Long.valueOf(element2.getAttribute("date"))));
+                        info.setEase(Double.valueOf(element2.getAttribute("ease")));
+                        info.setAmountRepetition(Integer.valueOf(element2.getAttribute("amountRepetition")));
+                        Date oldDate = new Date(Long.valueOf(element2.getAttribute("oldDate")));
+                        info.setOldDate(new Date(info.getDate().getTime() - oldDate.getTime()));
                         infoGroup.addInformation(info);
                     } else if(element2.getAttribute("type").equals("Question")) {
                         //it is an Question-Object

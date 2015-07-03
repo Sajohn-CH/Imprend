@@ -1,4 +1,4 @@
-package InformationManagement;
+package informationManagement;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,6 +16,7 @@ public class InformationGroup {
     private ArrayList<Information> informations;
     private ArrayList<Question> questions;
     private Date youngestDate;
+    private String comment;
 
     public InformationGroup() {
         informations = new ArrayList<>();
@@ -55,6 +56,14 @@ public class InformationGroup {
 
     public void addQuestion(Question quest) {
         questions.add(quest);
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 }
 

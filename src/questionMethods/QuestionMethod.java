@@ -1,6 +1,5 @@
-package QuestionMethods;
+package questionMethods;
 
-import javax.annotation.processing.FilerException;
 import java.util.ArrayList;
 
 /**
@@ -19,5 +18,9 @@ public class QuestionMethod {
 
     public ArrayList<String> getNextCard() {
         return null;
+    }
+
+    public void setResponse(int response) {
+
     }
 }

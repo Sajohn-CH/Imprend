@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <Stack>
-	<InformationGroup>
+	<InformationGroup comment="">
 		<Information type="Question">Beginn 1. Weltkrieg?</Information>
-		<Information type="Information" date="0">1914</Information>
+		<Information type="Information" date="0" ease="2.5" amountRepetition="0" oldDate="0">1914</Information>
 	</InformationGroup>
-	<InformationGroup>
-		<Information type="Information" date="0">lesen</Information>
-		<Information type="Information" date="0">lire</Information>
+	<InformationGroup comment="">
+		<Information type="Information" date="0" ease="2.5" amountRepetition="0" oldDate="0">lesen</Information>
+		<Information type="Information" date="0" ease="2.5" amountRepetition="0" oldDate="0">lire</Information>
 	</InformationGroup>
 </Stack>

@@ -1,4 +1,4 @@
-package InformationManagement;
+package informationManagement;
 
 /**
  * Created by samuel on 30.06.15.

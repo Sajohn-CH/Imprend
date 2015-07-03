@@ -1,6 +1,6 @@
 package utilities;
 
-import QuestionMethods.QuestionMethod;
+import questionMethods.QuestionMethod;
 import gui.*;
 
 import javax.swing.*;
@@ -8,6 +8,7 @@ import java.awt.*;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 /**
  * Created by samuel on 30.06.15.
@@ -15,7 +16,7 @@ import java.util.Map;
 public class Imprend {
 
     private static Imprend imprend;
-    private JFrame frame;
+    public JFrame frame;
     private CardLayout cd;
 
     public Settings settings;
@@ -59,12 +60,22 @@ public class Imprend {
         imprend.addPanelToMain(imprend.pnlCard, imprend.strPnlCard);
 
 
-        imprend.frame.setSize(1920,1000);
+        imprend.frame.setSize(imprend.settings.getResolution());
         imprend.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         imprend.frame.setVisible(true);
         imprend.frame.setLayout(new BorderLayout());
         imprend.frame.add(imprend.pnlBar, BorderLayout.PAGE_START);
         imprend.frame.add(imprend.pnlMain, BorderLayout.CENTER);
+
+        //change the language within the JOPtionPanels
+        ResourceBundle general = ResourceBundle.getBundle(imprend.settings.getResourceBundles()+".GeneralBundle", imprend.settings.getLocale(), new UTF8Control());
+        UIManager.put("OptionPane.cancelButtonText", general.getString("Cancel"));
+        UIManager.put("OptionPane.noButtonText", general.getString("No"));
+        UIManager.put("OptionPane.okButtonText", general.getString("Ok"));
+        UIManager.put("OptionPane.yesButtonText", general.getString("Yes"));
+
+
+        //Set the Panel, which should be displayed first
         imprend.switchPanel(pnlMenu.getName());
 
     }
