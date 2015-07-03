@@ -11,9 +11,11 @@ import java.util.ArrayList;
 public class Stack {
     private ArrayList<InformationGroup> infoGroups;
     private String name;
+    private File stackFile;
 
     public Stack(String stackPath) {
-        infoGroups = Load.loadStack(new File(stackPath));
+        stackFile = new File(stackPath);
+        infoGroups = Load.loadStack(stackFile);
     }
 
     public ArrayList<InformationGroup> getAllInfoGroups() {
@@ -41,5 +43,9 @@ public class Stack {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public File getStackFile() {
+        return stackFile;
     }
 }

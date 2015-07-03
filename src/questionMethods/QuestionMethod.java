@@ -23,4 +23,11 @@ public class QuestionMethod {
     public void setResponse(int response) {
 
     }
+
+    public void stackFinished() {
+    }
+
+    public boolean hasCards() {
+        return true;
+    }
 }

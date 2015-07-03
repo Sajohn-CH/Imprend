@@ -3,6 +3,7 @@ package gui;
 import questionMethods.QMethCards;
 import questionMethods.QuestionMethod;
 import utilities.Imprend;
+import utilities.Save;
 import utilities.UTF8Control;
 
 import javax.swing.*;
@@ -174,6 +175,7 @@ public class JCardPanel extends JNavPanel implements MouseListener, KeyListener{
             remove(pnlCenter);
             add(pnlFinish);
             */
+            questMeth.stackFinished();
             btnMenu.doClick();
             return;
 

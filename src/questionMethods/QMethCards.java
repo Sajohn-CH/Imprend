@@ -5,6 +5,7 @@ import informationManagement.InformationGroup;
 import informationManagement.Question;
 import informationManagement.Stack;
 import spacingAlgorithms.VerySimpleCard;
+import utilities.Save;
 
 import java.util.*;
 
@@ -21,6 +22,7 @@ import java.util.*;
  */
 public class QMethCards extends QuestionMethod{
 
+    private Stack stack;
     private ArrayList<InformationGroup> infoGroups = new ArrayList<>();
     private ArrayList<String[]> repCards = new ArrayList<>();   //ArrayList of all cards with a response below 3. They will be displayed at the end once again.
     //pos = 0//private int pos;        //current position in the infoGrops ArrayList. Is increase everytime getNextCard is being called.
@@ -29,7 +31,7 @@ public class QMethCards extends QuestionMethod{
     private boolean inRepetition;   //indicates if the cards, with an response below 3 are being repeated.
 
     public QMethCards(String stackPath) {
-        Stack stack = new Stack(stackPath);
+        stack = new Stack(stackPath);
         //get all InfoGroups where at least one object must be learned.
         infoGroups = stack.getAllInfoGroupsToLearn();
         currentCard = new String[2];
@@ -131,6 +133,19 @@ public class QMethCards extends QuestionMethod{
         infoGroups.remove(0);
     }
 
+    @Override
+    public void stackFinished() {
+        //save the stack, to save the new dates and eases
+        Save.saveStack(stack);
+    }
+
+    @Override
+    public  boolean hasCards() {
+        if(infoGroups.size() == 0) {
+            return false;
+        }
+        return true;
+    }
     private int getEarliestInformationPos(ArrayList<Information> infos) {
         //get the Information-Object which need to be learned earlier.
         //get all earliest date. (earliest = smalles number when transfered to long with getTime()

@@ -40,8 +40,8 @@ public class JMenuPanel extends JNavPanel {
         DefaultListModel<String> lstModel = new DefaultListModel<>();
 
         combo.addItem(general.getString("QMethCards"));
-        combo.addItem(general.getString("QMethRepetition"));
-        combo.addItem(general.getString("QMethMockTest"));
+        //combo.addItem(general.getString("QMethRepetition"));
+        //combo.addItem(general.getString("QMethMockTest"));
 
         String[] stacks = Load.getAllObjectPathsIn(imprend.settings.getCardsDir());
         for (int i = 0; i < stacks.length; i++) {
@@ -76,8 +76,12 @@ public class JMenuPanel extends JNavPanel {
                 }else if (combo.getSelectedItem().equals(general.getString("QMethCards"))) {
                     //QuestionMethod Cards
                     questionMethod = new QMethCards(lstCards.getSelectedValue());
-                    imprend.JCardPanel_initNewLearning(questionMethod);
-                    imprend.switchPanel(imprend.strPnlCard);
+                    if(questionMethod.hasCards()) {
+                        imprend.JCardPanel_initNewLearning(questionMethod);
+                        imprend.switchPanel(imprend.strPnlCard);
+                    } else {
+                        JOptionPane.showMessageDialog(null, menu.getString("MsgStackNoCardsToLearn"), menu.getString("MsgStackNoCardsToLearnShort"), JOptionPane.OK_OPTION);
+                    }
                 } else {
                     //add other QuestionMethod types here
                 }
