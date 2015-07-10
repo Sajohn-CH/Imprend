@@ -17,17 +17,23 @@ public class QuestionMethod {
     }
 
     public ArrayList<String> getNextCard() {
+        //Returns the information of the informations/questions of the next Cards
         return null;
     }
 
     public void setResponse(int response) {
-
+        //Is being called by the Panel, "asking the questions" to say how good the user remembered the informations
     }
 
     public void stackFinished() {
+        //Method called by the Panel to say that the stack is finished. So everything can be saved
     }
 
     public boolean hasCards() {
         return true;
+    }
+
+    public void redoLastCard() {
+
     }
 }

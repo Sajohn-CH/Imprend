@@ -5,15 +5,15 @@ import java.util.Date;
 /**
  * Created by samuel on 30.06.15.
  *
- * Class representing a piece of information. It can act either as a answer to a question or a question itself or something else
+ * Class representing a piece of information. It can act either as a answer to a question or a question itself or something else.
  */
-public class Information {
+public class Information extends InfoObject{
     private String information;
     private Date date;
     private double ease;
     private int amountRepetition;
     private Date oldDate;
-    //private int id;
+    private int id;
 
     public Information() {
 
@@ -61,5 +61,13 @@ public class Information {
 
     public void setOldDate(Date oldDate) {
         this.oldDate = oldDate;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 }

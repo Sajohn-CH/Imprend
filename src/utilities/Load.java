@@ -9,6 +9,7 @@ import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
@@ -58,6 +59,7 @@ public class Load {
                 Element element1 = (Element) nList.item(i);
                 InformationGroup infoGroup = new InformationGroup();
                 infoGroup.setComment(element1.getAttribute("comment"));
+                infoGroup.setId(Integer.valueOf(element1.getAttribute("id")));
                 //Create for every Object in the xml-File a corresponding Object (Information or Question) and add it to the InformationGroup infoGroup
                 for(int j = 0; j < element1.getElementsByTagName("Information").getLength(); j++) {
                     Element element2 = (Element) element1.getElementsByTagName("Information").item(j);
@@ -70,11 +72,13 @@ public class Load {
                         info.setAmountRepetition(Integer.valueOf(element2.getAttribute("amountRepetition")));
                         Date oldDate = new Date(Long.valueOf(element2.getAttribute("oldDate")));
                         info.setOldDate(new Date(info.getDate().getTime() - oldDate.getTime()));
+                        info.setId(Integer.valueOf(element2.getAttribute("id")));
                         infoGroup.addInformation(info);
                     } else if(element2.getAttribute("type").equals("Question")) {
                         //it is an Question-Object
                         Question question = new Question();
-                        question.setQuestion(element2.getTextContent());
+                        question.setInformation(element2.getTextContent());
+                        question.setId(Integer.valueOf(element2.getAttribute("id")));
                         infoGroup.addQuestion(question);
                     }
                 }
@@ -86,6 +90,33 @@ public class Load {
             return null;
         }
         return infoGroups;
+
+    }
+
+    public static int getStackId(File file) {
+        if(file.getPath().split("\\.")[1].equals("xml")){
+            //if xml-File
+            return getStackIdXML(file);
+        }
+        return -1;
+    }
+
+    private static int getStackIdXML(File file) {
+        //reads the ID of a stack out of the xml-File
+        try {
+            //start reading the xml-File
+            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+            Document doc = dBuilder.parse(file);
+            dBuilder = dbFactory.newDocumentBuilder();
+            doc.getDocumentElement().normalize();
+
+            return Integer.valueOf(doc.getDocumentElement().getAttribute("id"));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return -1;
+        }
 
     }
 }

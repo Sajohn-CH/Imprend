@@ -14,6 +14,6 @@ public class JNavPanel extends JPanel{
     }
 
     public void back(Imprend imprend) {
-
+        //The Action which should the done, to redo/undo the last action, or switch to the last saw panel.
     }
 }

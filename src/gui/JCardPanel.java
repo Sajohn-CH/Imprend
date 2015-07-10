@@ -16,20 +16,24 @@ import java.util.ResourceBundle;
  * Created by samuel on 01.07.15.
  * A Panel for learning simple cards.
  */
-public class JCardPanel extends JNavPanel implements MouseListener, KeyListener{
+public class JCardPanel extends JNavPanel implements MouseListener{
 
     QuestionMethod questMeth;
 
-    JLabel lblQuest;
-    JLabel lblAnsw;
-    JPanel pnlFinish;
-    JPanel pnlCenter;
-    JPanel pnlResponse;
+    private JLabel lblQuest;
+    private JLabel lblAnsw;
+    private JPanel pnlFinish;
+    private JPanel pnlCenter;
+    private JPanel pnlResponse;
 
-    JButton btnMenu;
-    JButton btnResp0, btnResp1, btnResp2, btnResp3, btnResp4;
+    private JButton btnMenu;
+    private JButton btnResp0, btnResp1, btnResp2, btnResp3, btnResp4;
+
+    private boolean redo;       //Indicates whether the back-Button just has been pressed, so it can't be pressed two times in a row.
+    private boolean justStarted;    //Indicates wheter this is the first card or not, so the back-Button would lead then back to the menu
     public JCardPanel(final Imprend imprend) {
         final ResourceBundle card = ResourceBundle.getBundle(imprend.settings.getResourceBundles()+".JCardPanelBundle", imprend.settings.getLocale(), new UTF8Control());
+        redo = false;
 
         pnlCenter = new JPanel();
         lblQuest = new JLabel();
@@ -78,40 +82,56 @@ public class JCardPanel extends JNavPanel implements MouseListener, KeyListener{
         ActionListener goResp0 = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                questMeth.setResponse(0);
-                nextCard();
+                if (lblAnsw.isVisible()) {
+                    questMeth.setResponse(0);
+                    redo = false;
+                    nextCard();
+                }
+
             }
         };
 
         ActionListener goResp1 = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                questMeth.setResponse(1);
-                nextCard();
+                if (lblAnsw.isVisible()) {
+                    questMeth.setResponse(1);
+                    redo = false;
+                    nextCard();
+                }
             }
         };
 
         ActionListener goResp2 = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                questMeth.setResponse(2);
-                nextCard();
+                if (lblAnsw.isVisible()) {
+                    questMeth.setResponse(2);
+                    redo = false;
+                    nextCard();
+                }
             }
         };
 
         ActionListener goResp3 = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                questMeth.setResponse(3);
-                nextCard();
+                if (lblAnsw.isVisible()) {
+                    questMeth.setResponse(3);
+                    redo = false;
+                    nextCard();
+                }
             }
         };
 
         ActionListener goResp4 = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                questMeth.setResponse(4);
-                nextCard();
+                if (lblAnsw.isVisible()) {
+                    questMeth.setResponse(4);
+                    redo = false;
+                    nextCard();
+                }
             }
         };
 
@@ -122,18 +142,22 @@ public class JCardPanel extends JNavPanel implements MouseListener, KeyListener{
         btnResp3.addActionListener(goResp3);
         btnResp4.addActionListener(goResp4);
 
+        btnResp0.setVisible(false);
+        btnResp1.setVisible(false);
+        btnResp2.setVisible(false);
+        btnResp3.setVisible(false);
+        btnResp4.setVisible(false);
+
         addMouseListener(this);
-        //addKeyListener(this);
 
         //Add KeyBindings
-        //doesn't work at the moment
         Action action0 = new Action0();
         Action action1 = new Action1();
         Action action2 = new Action2();
         Action action3 = new Action3();
         Action action4 = new Action4();
         Action actionEnter = new EnterAction();
-        int mapName = JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT;
+        int mapName = JComponent.WHEN_IN_FOCUSED_WINDOW;
         InputMap imap = getInputMap(mapName);
         KeyStroke ZeroKey = KeyStroke.getKeyStroke('0');
         KeyStroke OneKey = KeyStroke.getKeyStroke('1');
@@ -157,75 +181,63 @@ public class JCardPanel extends JNavPanel implements MouseListener, KeyListener{
     }
 
     public void initNewLearning(QuestionMethod questMeth) {
+        //Performs actions, which are needed to first time, a new Learning session is started
+        //This can't be in the constructor, because the constructor is being called only once, when the program starts
+        //This is being called everytime the user wants to learn a cardstack.
         this.questMeth = questMeth;
         nextCard();
+        justStarted = true;
 
     }
 
     private void showAnswer() {
         lblAnsw.setVisible(true);
+        btnResp0.setVisible(true);
+        btnResp1.setVisible(true);
+        btnResp2.setVisible(true);
+        btnResp3.setVisible(true);
+        btnResp4.setVisible(true);
     }
 
     private void nextCard() {
+        justStarted = false;
         ArrayList<String> card = questMeth.getNextCard();
         //checking if the stack if finished
         if(card.size() == 1 && card.get(0).equals("ERROR:lastCard")) {
             //stack is over
-           /* System.out.println("Stack finished");
-            remove(pnlCenter);
-            add(pnlFinish);
-            */
             questMeth.stackFinished();
             btnMenu.doClick();
             return;
-
         }
         //first element of the card ArrayList is the question
         lblQuest.setText(card.get(0));
         //secon element is the answer
         lblAnsw.setText(card.get(1));
+
         lblAnsw.setVisible(false);
+        btnResp0.setVisible(false);
+        btnResp1.setVisible(false);
+        btnResp2.setVisible(false);
+        btnResp3.setVisible(false);
+        btnResp4.setVisible(false);
 
     }
 
     //Method from the parentclass JNavPanel
     @Override
     public void back(Imprend imprend) {
+        //undo the last response
 
-    }
+        if(justStarted) {
+            imprend.switchPanel(imprend.strPnlMenu);
+        }
+        if(!redo) {
+            questMeth.redoLastCard();
+            nextCard();
+            redo = true;
+            return;
+        }
 
-    //Method from the KeyListener
-    @Override
-    public void keyTyped(KeyEvent keyEvent) {
-        System.out.println(keyEvent.getKeyChar());
-       /* switch (keyEvent.getKeyChar()) {
-            case '0':
-                btnResp0.doClick();
-                break;
-            case '1':
-                btnResp1.doClick();
-                break;
-            case '2':
-                btnResp2.doClick();
-                break;
-            case '3':
-                btnResp3.doClick();
-                break;
-            case '4':
-                btnResp4.doClick();
-                break;
-        }*/
-    }
-
-    @Override
-    public void keyPressed(KeyEvent keyEvent) {
-        System.out.println("pressed");
-
-    }
-
-    @Override
-    public void keyReleased(KeyEvent keyEvent) {
-        System.out.println("released");
     }
 
     //Methods from the MouseListener
@@ -257,6 +269,7 @@ public class JCardPanel extends JNavPanel implements MouseListener, KeyListener{
 
     }
 
+    //Methods for the Keybindings. (The Action of each key)
     private class Action0 extends AbstractAction {
         @Override
         public void actionPerformed(ActionEvent actionEvent) {

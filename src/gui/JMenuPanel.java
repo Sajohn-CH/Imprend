@@ -1,9 +1,13 @@
 package gui;
 
+import informationManagement.Information;
+import informationManagement.InformationGroup;
+import informationManagement.Stack;
 import questionMethods.QMethCards;
 import questionMethods.QuestionMethod;
 import utilities.Imprend;
 import utilities.Load;
+import utilities.Save;
 import utilities.UTF8Control;
 
 import javax.swing.*;
@@ -11,6 +15,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.ResourceBundle;
 
 /**
@@ -91,14 +97,27 @@ public class JMenuPanel extends JNavPanel {
         ActionListener goAdd = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-
+                imprend.switchPanel(imprend.strPnlAdd);
             }
         };
 
         ActionListener goEdit = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-
+                //This button will, instead of edit the stack, remove the learning progress. This is just there for testing purpose.
+                //So a stack can be "learned" several time to test the program.
+                Stack stack = new Stack(lstCards.getSelectedValue());
+                ArrayList<InformationGroup> informationGroups = stack.getAllInfoGroups();
+                for (int i = 0; i < informationGroups.size(); i++) {
+                    ArrayList<Information> infos = informationGroups.get(i).getInformations();
+                    for(int j = 0; j < infos.size(); j++) {
+                        infos.get(j).setDate(new Date(0));
+                        infos.get(j).setEase(2.5);
+                        infos.get(j).setAmountRepetition(0);
+                        infos.get(j).setOldDate(new Date(0));
+                    }
+                }
+                Save.saveStack(stack);
             }
         };
 

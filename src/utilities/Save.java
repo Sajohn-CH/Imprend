@@ -32,6 +32,7 @@ public class Save {
     }
 
     private static void saveXMLStack(Stack stack) {
+        //saves the content of a Stack info a xml-File
 
         if(stack.getStackFile().exists()) {
             //if file exits it will be remove so it can be replaced (maybe i will later change this, so the file will be ony changed instead of replaced)
@@ -44,6 +45,7 @@ public class Save {
             //root element
             Document doc = docBuilder.newDocument();
             Element rootElement = doc.createElement("Stack");
+            rootElement.setAttribute("id", String.valueOf(stack.getId()));
             doc.appendChild(rootElement);
 
             ArrayList<InformationGroup> infoGroups = stack.getAllInfoGroups();
@@ -52,6 +54,7 @@ public class Save {
                 Element infoGroup = doc.createElement("InformationGroup");
                 rootElement.appendChild(infoGroup);
                 infoGroup.setAttribute("comment", infoGroups.get(i).getComment());
+                infoGroup.setAttribute("id", String.valueOf(infoGroups.get(i).getId()));
                 rootElement.appendChild(infoGroup);
 
                 //Information elements
@@ -63,6 +66,7 @@ public class Save {
                     info.setAttribute("ease", String.valueOf(infos.get(j).getEase()));
                     info.setAttribute("amountRepetition", String.valueOf(infos.get(j).getAmountRepetition()));
                     info.setAttribute("oldDate", String.valueOf(infos.get(j).getOldDate().getTime()));
+                    info.setAttribute("id", String.valueOf(infos.get(j).getId()));
                     info.appendChild(doc.createTextNode(infos.get(j).getInformation()));
                     infoGroup.appendChild(info);
                 }
@@ -72,7 +76,8 @@ public class Save {
                 for(int j = 0; j < questions.size(); j++) {
                     Element question = doc.createElement("Information");
                     question.setAttribute("type", "Question");
-                    question.appendChild(doc.createTextNode(questions.get(j).getQuestion()));
+                    question.setAttribute("id", String.valueOf(questions.get(j).getId()));
+                    question.appendChild(doc.createTextNode(questions.get(j).getInformation()));
                     infoGroup.appendChild(question);
                 }
             }

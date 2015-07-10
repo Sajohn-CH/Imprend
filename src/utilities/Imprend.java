@@ -5,6 +5,7 @@ import gui.*;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,6 +30,7 @@ public class Imprend {
     public final String strPnlMenu = "JMenuPanel";
     public final String strPnlSettings = "JSettingsPanel";
     public final String strPnlCard = "JCardPanel";
+    public final String strPnlAdd = "JAddPanel";
 
     private static String currentPanel;     //name of the current panel beeing visible
     private static Map<String, JNavPanel> panels = new HashMap<>();    //map of all panels and their names, to associate them with each other
@@ -52,12 +54,14 @@ public class Imprend {
         JMenuPanel pnlMenu = new JMenuPanel(imprend);
         JSettingsPanel pnlSettings = new JSettingsPanel(imprend);
         imprend.pnlCard = new JCardPanel(imprend);
+        JAddPanel pnlAdd = new JAddPanel(imprend);
 
 
         imprend.pnlMain.setLayout(imprend.cd);
         imprend.addPanelToMain(pnlMenu, imprend.strPnlMenu);
         imprend.addPanelToMain(pnlSettings, imprend.strPnlSettings);
         imprend.addPanelToMain(imprend.pnlCard, imprend.strPnlCard);
+        imprend.addPanelToMain(pnlAdd, imprend.strPnlAdd);
 
 
         imprend.frame.setSize(imprend.settings.getResolution());
@@ -77,7 +81,6 @@ public class Imprend {
 
         //Set the Panel, which should be displayed first
         imprend.switchPanel(pnlMenu.getName());
-
     }
 
     private void addPanelToMain(JNavPanel pnl, String strPnl) {

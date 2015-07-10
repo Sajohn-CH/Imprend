@@ -17,6 +17,7 @@ public class InformationGroup {
     private ArrayList<Question> questions;
     private Date youngestDate;
     private String comment;
+    private int id;
 
     public InformationGroup() {
         informations = new ArrayList<>();
@@ -64,6 +65,30 @@ public class InformationGroup {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public InfoObject getInfoObjectById(int id) {
+        //returns the Information or Questions with the id given
+        for(int i = 0; i < informations.size(); i++) {
+            if(informations.get(i).getId() == id) {
+                return informations.get(i);
+            }
+        }
+
+        for(int i = 0; i < questions.size(); i++) {
+            if(questions.get(i).getId() == id) {
+                return questions.get(i);
+            }
+        }
+        return null;
     }
 }
 

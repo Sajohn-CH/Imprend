@@ -12,10 +12,12 @@ public class Stack {
     private ArrayList<InformationGroup> infoGroups;
     private String name;
     private File stackFile;
+    private int id;
 
     public Stack(String stackPath) {
         stackFile = new File(stackPath);
         infoGroups = Load.loadStack(stackFile);
+        id = Load.getStackId(stackFile);
     }
 
     public ArrayList<InformationGroup> getAllInfoGroups() {
@@ -47,5 +49,20 @@ public class Stack {
 
     public File getStackFile() {
         return stackFile;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public InfoObject getInfoObjectById(int id) {
+        //returns the InfoObject with the given id. The id of each InfoObject must be unique in each stack.
+        //InfoObject = Information or Question
+        for(int i = 0; i < infoGroups.size(); i++) {
+            if(infoGroups.get(i).getInfoObjectById(id) != null) {
+                return infoGroups.get(i).getInfoObjectById(id);
+            }
+        }
+        return null;
     }
 }
