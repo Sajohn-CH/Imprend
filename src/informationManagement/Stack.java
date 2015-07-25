@@ -15,9 +15,19 @@ public class Stack {
     private int id;
 
     public Stack(String stackPath) {
+        //get the stackname out of the stackpath. The stackpath is the path to the folder where the stack lies + stackname + .xml or .txt or whatever type it is
+        String[] partName = stackPath.split(File.separator);
+
         stackFile = new File(stackPath);
-        infoGroups = Load.loadStack(stackFile);
-        id = Load.getStackId(stackFile);
+        if(stackFile.exists()) {
+            //Only load the stack if it exists. So there won't be any errors, when e.g. e new stack is created, which first need to be "filled" with information.
+            infoGroups = Load.loadStack(stackFile);
+            id = Load.getStackId(stackFile);
+        } else {
+            infoGroups = new ArrayList<>();
+        }
+        name = partName[partName.length-1];
+        name = name.split("\\.")[0];
     }
 
     public ArrayList<InformationGroup> getAllInfoGroups() {
@@ -64,5 +74,9 @@ public class Stack {
             }
         }
         return null;
+    }
+
+    public void addInformationGroup(InformationGroup informationGroup) {
+        infoGroups.add(informationGroup);
     }
 }

@@ -16,7 +16,11 @@ public class Information extends InfoObject{
     private int id;
 
     public Information() {
-
+        //Set default values. information and id doesn't have default values.
+        date = new Date(0);
+        ease = 2.5;
+        amountRepetition = 0;
+        oldDate = new Date(0);
     }
 
     public String getInformation() {

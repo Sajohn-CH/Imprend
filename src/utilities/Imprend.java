@@ -22,9 +22,11 @@ public class Imprend {
 
     public Settings settings;
 
+    public JAddPanel pnlAdd;
     private JPanel pnlMain;
     private JBarPanel pnlBar;
     private JCardPanel pnlCard;
+    private JMenuPanel pnlMenu;
 
     //all Strings for the names of each panel for the cardLayout
     public final String strPnlMenu = "JMenuPanel";
@@ -51,17 +53,17 @@ public class Imprend {
 
         //initialize the panels
         imprend.pnlMain = new JPanel();
-        JMenuPanel pnlMenu = new JMenuPanel(imprend);
+        imprend.pnlMenu = new JMenuPanel(imprend);
         JSettingsPanel pnlSettings = new JSettingsPanel(imprend);
         imprend.pnlCard = new JCardPanel(imprend);
-        JAddPanel pnlAdd = new JAddPanel(imprend);
+        imprend.pnlAdd = new JAddPanel();   //This JAddPanel doesn't get imprend because it is more like a placeholder. If one want to switch to this panel, he sould make a new one, with
+                                            //imprend and a stack, which it should fill with content (with: imprend.pnlAdd = new JAddPanel(imprend, stack);
 
 
         imprend.pnlMain.setLayout(imprend.cd);
-        imprend.addPanelToMain(pnlMenu, imprend.strPnlMenu);
+        imprend.addPanelToMain(imprend.pnlMenu, imprend.strPnlMenu);
         imprend.addPanelToMain(pnlSettings, imprend.strPnlSettings);
         imprend.addPanelToMain(imprend.pnlCard, imprend.strPnlCard);
-        imprend.addPanelToMain(pnlAdd, imprend.strPnlAdd);
 
 
         imprend.frame.setSize(imprend.settings.getResolution());
@@ -80,10 +82,10 @@ public class Imprend {
 
 
         //Set the Panel, which should be displayed first
-        imprend.switchPanel(pnlMenu.getName());
+        imprend.switchPanel(imprend.pnlMenu.getName());
     }
 
-    private void addPanelToMain(JNavPanel pnl, String strPnl) {
+    public void addPanelToMain(JNavPanel pnl, String strPnl) {
         imprend.pnlMain.add(pnl, strPnl);
         panels.put(strPnl, pnl);
     }
@@ -96,6 +98,10 @@ public class Imprend {
     public void JCardPanel_initNewLearning(QuestionMethod questionMethod) {
         //This method only is there to allow the pnlMenu to call the initNewLearning()-Method from the pnlCard
         imprend.pnlCard.initNewLearning(questionMethod);
+    }
+
+    public void JMenuPanel_reloadStackList(Imprend imprend) {
+        pnlMenu.reloadStackList(imprend);
     }
 
     public void back() {

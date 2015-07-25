@@ -25,6 +25,7 @@ import java.util.ResourceBundle;
  */
 public class JMenuPanel extends JNavPanel {
 
+    private DefaultListModel<String> lstModel;
 
     public JMenuPanel(final Imprend imprend) {
         final ResourceBundle general = ResourceBundle.getBundle(imprend.settings.getResourceBundles()+".GeneralBundle", imprend.settings.getLocale(), new UTF8Control());
@@ -43,7 +44,7 @@ public class JMenuPanel extends JNavPanel {
         final JComboBox<String> combo = new JComboBox<>();
         JScrollPane scrlPane = new JScrollPane();
         final JList<String> lstCards = new JList<>();
-        DefaultListModel<String> lstModel = new DefaultListModel<>();
+        lstModel = new DefaultListModel<>();
 
         combo.addItem(general.getString("QMethCards"));
         //combo.addItem(general.getString("QMethRepetition"));
@@ -97,7 +98,22 @@ public class JMenuPanel extends JNavPanel {
         ActionListener goAdd = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                imprend.switchPanel(imprend.strPnlAdd);
+                String stackName = JOptionPane.showInputDialog(null, menu.getString("MsgStackName"));
+                if(stackName.equals("") || stackName == null) {
+                    //the given stackname is invalid
+                    if(stackName.equals("")) {
+                        //the user wanted to create a stack with an emtpy name (stackname == null means he clicked cancel)
+                        JOptionPane.showMessageDialog(null, menu.getString("MsgEmptyStackName"), menu.getString("MsgEmptyStackNameShort"), JOptionPane.ERROR_MESSAGE);
+                    }
+                } else {
+                    //I should later add here some other things to put the stack in the right folders
+                    stackName = imprend.settings.getCardsDir().getPath() + File.separator + stackName + ".xml";
+                    Stack stack = new Stack(stackName);
+                    imprend.pnlAdd = new JAddPanel(imprend, stack);
+                    imprend.addPanelToMain(imprend.pnlAdd, imprend.strPnlAdd);
+                    imprend.switchPanel(imprend.strPnlAdd);
+                    System.out.println("...");
+                }
             }
         };
 
@@ -130,6 +146,16 @@ public class JMenuPanel extends JNavPanel {
     @Override
     public void back(Imprend imprend) {
         //more back is impossible :)
+    }
+
+    public void reloadStackList(Imprend imprend) {
+        //reloads the list of all stacks.
+        String[] stacks = Load.getAllObjectPathsIn(imprend.settings.getCardsDir());
+        lstModel.removeAllElements();
+        for (int i = 0; i < stacks.length; i++) {
+            lstModel.addElement(stacks[i]);
+        }
+
     }
 
 }

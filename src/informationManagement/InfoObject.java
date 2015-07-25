@@ -10,7 +10,6 @@ public class InfoObject {
     int id;
 
     public InfoObject() {
-
     }
 
     public String getInformation() {
