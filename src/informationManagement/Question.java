@@ -38,7 +38,7 @@ public class Question extends InfoObject{
 
     @Override
     public void setInfoGroupId(int infoGroupId) {
-        infoGroupId = infoGroupId;
+        this.infoGroupId = infoGroupId;
     }
 
     @Override

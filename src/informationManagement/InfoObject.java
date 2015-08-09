@@ -44,7 +44,7 @@ public class InfoObject {
     }
 
     public void setInfoGroupId(int infoGroupId) {
-        infoGroupId = infoGroupId;
+        this.infoGroupId = infoGroupId;
     }
 
 }

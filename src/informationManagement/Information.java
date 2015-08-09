@@ -86,6 +86,6 @@ public class Information extends InfoObject{
 
     @Override
     public void setInfoGroupId(int infoGroupId) {
-        infoGroupId = infoGroupId;
+        this.infoGroupId = infoGroupId;
     }
 }

@@ -78,11 +78,6 @@ public class InformationGroup {
         return informations.get(id);
     }
 
-    /*public void addQuestion(Question quest) {
-        quest.setId(getNextId());
-        questions.add(quest);
-    }*/
-
     public String getComment() {
         return comment;
     }
