@@ -8,19 +8,23 @@ import java.util.Date;
  * Class representing a piece of information. It can act either as a answer to a question or a question itself or something else.
  */
 public class Information extends InfoObject{
-    private String information;
-    private Date date;
-    private double ease;
-    private int amountRepetition;
+    private String information;     //The information itself
+    private Date date;              //The next date it should be asked last
+    private double ease;            //the ease/difficulty of remember the information
+    private int amountRepetition;   //How often it has been asked for
     private Date oldDate;
-    private int id;
+    private int id;                 //the id (identification number)
+    private int infoGroupId;        //the id of the InformationGroups the Information belongs to
 
     public Information() {
-        //Set default values. information and id doesn't have default values.
+        //Set default values.
         date = new Date(0);
         ease = 2.5;
         amountRepetition = 0;
         oldDate = new Date(0);
+        information = "";
+        id = -1;
+        infoGroupId = -1;
     }
 
     public String getInformation() {
@@ -73,5 +77,15 @@ public class Information extends InfoObject{
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    @Override
+    public int getInfoGroupId() {
+        return infoGroupId;
+    }
+
+    @Override
+    public void setInfoGroupId(int infoGroupId) {
+        infoGroupId = infoGroupId;
     }
 }

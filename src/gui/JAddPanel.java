@@ -12,13 +12,15 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ResourceBundle;
+import java.util.*;
 
 /**
  * Created by samuel on 03.07.15.
+ * Panel to add a new stack
  */
 public class JAddPanel extends JNavPanel{
-    private int idCounter;      //used in the method getNextId(). DO NOT CHANGE THE VALUE!!
+    private Map<Integer, String> infoGroupsOfStack;      //Map with the ids and Information(string) of all Informationgroups (Cards) of this stack, which where already added
+    private DefaultListModel<String> lstModel;          //ListModel of lstCards. Is global so the content can be changed in other method (reloadCardsList())
 
     public JAddPanel() {
         add(new JLabel("Hallo Test"));
@@ -26,7 +28,7 @@ public class JAddPanel extends JNavPanel{
 
     public JAddPanel(final Imprend imprend, final Stack stack) {
         final ResourceBundle addPanel = ResourceBundle.getBundle(imprend.settings.getResourceBundles()+".JAddPanelBundle", new UTF8Control());
-        idCounter = 0;
+        infoGroupsOfStack = new HashMap<>();
 
         JPanel pnlTop = new JPanel();
         JLabel lblStackName = new JLabel(addPanel.getString("stackName"));
@@ -38,7 +40,7 @@ public class JAddPanel extends JNavPanel{
         JButton btnAddStack = new JButton(addPanel.getString("addStack"));
         JList listCards = new JList();
         JPanel pnlRightSide = new JPanel();
-        DefaultListModel<String> lstModel = new DefaultListModel<>();
+        lstModel = new DefaultListModel<>();
         JScrollPane scrollPane = new JScrollPane();
 
         combo.addItem(addPanel.getString("TypeCard"));
@@ -128,19 +130,16 @@ public class JAddPanel extends JNavPanel{
                 InformationGroup infoGroup = new InformationGroup();
                 Information info1 = new Information();
                 info1.setInformation(tFieldSide2.getText());
-                info1.setId(getNextId());
                 infoGroup.addInformation(info1);
                 switch (combo.getSelectedIndex()) {
                     case 0:
                         Question question = new Question();
                         question.setInformation(tFieldSide1.getText());
-                        question.setId(getNextId());
-                        infoGroup.addQuestion(question);
+                        infoGroup.addInformation(question);
                         break;
                     case 1:
                         Information info2 = new Information();
-                        info2.setInformation(tFieldSide1.getText());
-                        info2.setId(getNextId());
+                        info2.setInformation(tFieldSide1.getText());;
                         infoGroup.addInformation(info2);
                         break;
                 }
@@ -148,6 +147,10 @@ public class JAddPanel extends JNavPanel{
                 stack.addInformationGroup(infoGroup);
                 tFieldSide1.setText("");
                 tFieldSide2.setText("");
+
+                //add Card to Map infoGroupsOfStack
+                infoGroupsOfStack.put(infoGroup.getId(), infoGroup.getInfoObjectById(0).getInformation());
+                lstModel.addElement(infoGroup.getInfoObjectById(0).getInformation());
             }
         };
 
@@ -168,18 +171,20 @@ public class JAddPanel extends JNavPanel{
         btnAddStack.addActionListener(goAddStack);
     }
 
+    private void reloadCardsList() {
+        lstModel.clear();
+        //Iterate through the map to get all its entrys
+        Set set = infoGroupsOfStack.entrySet();
+        Iterator iterator = set.iterator();
+        while(iterator.hasNext()) {
+            Map.Entry entry = (Map.Entry) iterator.next();
+            lstModel.addElement((String) entry.getValue());
+        }
+    }
+
     @Override
     public void back(Imprend imprend) {
         imprend.switchPanel(imprend.strPnlMenu);
-    }
-
-    private int getNextId() {
-        /*This method will return the next available id for an InfoObject for this stack;
-         *The idCounter will count all ids. So the value the idCounter has, is always the same value as an new InfoObject in the stack would receive.
-         *So everytime an InfoObject gets it's id by the idCounter, the idCounter needs to be increased by one.
-         */
-        idCounter++;
-        return idCounter -1;
     }
 
 }

@@ -11,10 +11,12 @@ import utilities.Save;
 import utilities.UTF8Control;
 
 import javax.swing.*;
+import javax.swing.plaf.FileChooserUI;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.ResourceBundle;
@@ -41,6 +43,8 @@ public class JMenuPanel extends JNavPanel {
         JButton btnStart = new JButton(arrowHead);
         JButton btnAdd = new JButton(plus);
         JButton btnEdit = new JButton(pen);
+        JButton btnDeleteStack = new JButton(menu.getString("deleteStack"));
+        JButton btnCopyStack = new JButton(menu.getString("copyStack"));
         final JComboBox<String> combo = new JComboBox<>();
         JScrollPane scrlPane = new JScrollPane();
         final JList<String> lstCards = new JList<>();
@@ -62,6 +66,8 @@ public class JMenuPanel extends JNavPanel {
         pnlControls.add(btnStart);
         pnlControls.add(btnAdd);
         pnlControls.add(btnEdit);
+        pnlControls.add(btnCopyStack);
+        pnlControls.add(btnDeleteStack);
         pnlControls.add(combo);
 
         pnlStacks.setLayout(new BorderLayout());
@@ -77,7 +83,7 @@ public class JMenuPanel extends JNavPanel {
             public void actionPerformed(ActionEvent actionEvent) {
                 QuestionMethod questionMethod;
                 if(lstCards.getSelectedValue() == null) {
-                    System.out.println("noStack");
+                    //Error: No stack had benn choosen
                     JOptionPane.showMessageDialog(null, menu.getString("MsgNoStackChoosen"), menu.getString("MsgNoStackChoosenShort"), JOptionPane.ERROR_MESSAGE);
                     return;
                 }else if (combo.getSelectedItem().equals(general.getString("QMethCards"))) {
@@ -99,7 +105,7 @@ public class JMenuPanel extends JNavPanel {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 String stackName = JOptionPane.showInputDialog(null, menu.getString("MsgStackName"));
-                if(stackName.equals("") || stackName == null) {
+                if(stackName.equals("") || stackName.equals(null)) {
                     //the given stackname is invalid
                     if(stackName.equals("")) {
                         //the user wanted to create a stack with an emtpy name (stackname == null means he clicked cancel)
@@ -120,26 +126,71 @@ public class JMenuPanel extends JNavPanel {
         ActionListener goEdit = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                //This button will, instead of edit the stack, remove the learning progress. This is just there for testing purpose.
-                //So a stack can be "learned" several time to test the program.
-                Stack stack = new Stack(lstCards.getSelectedValue());
-                ArrayList<InformationGroup> informationGroups = stack.getAllInfoGroups();
-                for (int i = 0; i < informationGroups.size(); i++) {
-                    ArrayList<Information> infos = informationGroups.get(i).getInformations();
-                    for(int j = 0; j < infos.size(); j++) {
-                        infos.get(j).setDate(new Date(0));
-                        infos.get(j).setEase(2.5);
-                        infos.get(j).setAmountRepetition(0);
-                        infos.get(j).setOldDate(new Date(0));
-                    }
+                String stackName = lstCards.getSelectedValue();
+                if(stackName == null) {
+                    //Error: No stack had been chossen
+                    JOptionPane.showMessageDialog(null, menu.getString("MsgNoStackChoosenToEdit"), menu.getString("MsgNoStackChoosenShort"), JOptionPane.ERROR_MESSAGE);
+                } else {
+                    Stack stack = new Stack(stackName);
+                    imprend.pnlEdit = new JEditPanel(imprend, stack);
+                    imprend.addPanelToMain(imprend.pnlEdit, imprend.strPnlEdit);
+                    imprend.switchPanel(imprend.strPnlEdit);
                 }
-                Save.saveStack(stack);
+            }
+        };
+
+        ActionListener goDeleteStack = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                String stackName = lstCards.getSelectedValue();
+                if(stackName == null ){
+                    //Error: No stack had been chossen
+                    JOptionPane.showMessageDialog(null, menu.getString("MsgNoStackChoosenShort"), menu.getString("MsgNoStackChoosenShort"), JOptionPane.ERROR_MESSAGE);
+                } else {
+                    int answer = JOptionPane.showConfirmDialog(null, menu.getString("MsgSureDeleteStack"), menu.getString("MsgSure"), JOptionPane.OK_CANCEL_OPTION);
+                    if(answer == 0) {
+                        Stack stack =  new Stack(stackName);
+                        File stackFile = stack.getStackFile();
+                        //stackFile.delete();
+                        stackFile.deleteOnExit();
+                    }
+                    reloadStackList(imprend);
+                }
+            }
+        };
+
+        ActionListener goCopyStack = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                String stackName = lstCards.getSelectedValue();
+                if(stackName == null ){
+                    //Error: No stack had been chossen
+                    JOptionPane.showMessageDialog(null, menu.getString("MsgNoStackChoosenShort"), menu.getString("MsgNoStackChoosenShort"), JOptionPane.ERROR_MESSAGE);
+                } else {
+                    Stack stack =  new Stack(stackName);
+                    //ask for new name;
+                    String newName = JOptionPane.showInputDialog(null, menu.getString("MsgNewName"));
+                    //create new stack
+                    File stackFile = stack.getStackFile();
+                    String pathToStack = stackFile.getParentFile().getPath();
+                    String fileType = stack.getStackFile().getPath().split("\\.")[1];
+                    Stack stack2 = new Stack(pathToStack+File.separator+newName+"."+fileType);
+                    //fill it with the content of the other stack
+                    ArrayList<InformationGroup> infoGroups = (ArrayList<InformationGroup>) stack.copyAllInformationGroups();
+                    for(int i = 0; i < infoGroups.size(); i++) {
+                        stack2.addInformationGroup(infoGroups.get(i));
+                    }
+                    Save.saveStack(stack2);
+                    reloadStackList(imprend);
+                }
             }
         };
 
         btnStart.addActionListener(goStart);
         btnAdd.addActionListener(goAdd);
         btnEdit.addActionListener(goEdit);
+        btnDeleteStack.addActionListener(goDeleteStack);
+        btnCopyStack.addActionListener(goCopyStack);
 
     }
 

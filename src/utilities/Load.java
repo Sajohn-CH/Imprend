@@ -63,7 +63,7 @@ public class Load {
                 //Create for every Object in the xml-File a corresponding Object (Information or Question) and add it to the InformationGroup infoGroup
                 for(int j = 0; j < element1.getElementsByTagName("Information").getLength(); j++) {
                     Element element2 = (Element) element1.getElementsByTagName("Information").item(j);
-                    if(element2.getAttribute("type").equals("Information")) {
+                    if(element2.getAttribute("type").equals(Imprend.strInfoObjectInfo)) {
                         //it is an Information-Object
                         Information info = new Information();
                         info.setInformation(element2.getTextContent());
@@ -71,15 +71,15 @@ public class Load {
                         info.setEase(Double.valueOf(element2.getAttribute("ease")));
                         info.setAmountRepetition(Integer.valueOf(element2.getAttribute("amountRepetition")));
                         Date oldDate = new Date(Long.valueOf(element2.getAttribute("oldDate")));
-                        info.setOldDate(new Date(info.getDate().getTime() - oldDate.getTime()));
+                        info.setOldDate(oldDate);
                         info.setId(Integer.valueOf(element2.getAttribute("id")));
                         infoGroup.addInformation(info);
-                    } else if(element2.getAttribute("type").equals("Question")) {
+                    } else if(element2.getAttribute("type").equals(Imprend.strInfoObjectQuest)) {
                         //it is an Question-Object
                         Question question = new Question();
                         question.setInformation(element2.getTextContent());
                         question.setId(Integer.valueOf(element2.getAttribute("id")));
-                        infoGroup.addQuestion(question);
+                        infoGroup.addInformation(question);
                     }
                 }
                 infoGroups.add(infoGroup);
@@ -91,14 +91,6 @@ public class Load {
         }
         return infoGroups;
 
-    }
-
-    public static int getStackId(File file) {
-        if(file.getPath().split("\\.")[1].equals("xml")){
-            //if xml-File
-            return getStackIdXML(file);
-        }
-        return -1;
     }
 
     private static int getStackIdXML(File file) {

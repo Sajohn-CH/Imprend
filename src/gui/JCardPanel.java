@@ -203,6 +203,10 @@ public class JCardPanel extends JNavPanel implements MouseListener{
         justStarted = false;
         ArrayList<String> card = questMeth.getNextCard();
         //checking if the stack if finished
+        while(card.get(0).equals("ERROR:Skip")){
+            questMeth.setResponse(-1);
+            card = questMeth.getNextCard();
+        }
         if(card.size() == 1 && card.get(0).equals("ERROR:lastCard")) {
             //stack is over
             questMeth.stackFinished();

@@ -1,9 +1,6 @@
 package utilities;
 
-import informationManagement.Information;
-import informationManagement.InformationGroup;
-import informationManagement.Question;
-import informationManagement.Stack;
+import informationManagement.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -45,10 +42,9 @@ public class Save {
             //root element
             Document doc = docBuilder.newDocument();
             Element rootElement = doc.createElement("Stack");
-            rootElement.setAttribute("id", String.valueOf(stack.getId()));
             doc.appendChild(rootElement);
 
-            ArrayList<InformationGroup> infoGroups = stack.getAllInfoGroups();
+            ArrayList<InformationGroup> infoGroups = stack.copyAllInformationGroups();
             for(int i = 0; i < infoGroups.size(); i++) {
                 //InformationGroup elements
                 Element infoGroup = doc.createElement("InformationGroup");
@@ -57,28 +53,23 @@ public class Save {
                 infoGroup.setAttribute("id", String.valueOf(infoGroups.get(i).getId()));
                 rootElement.appendChild(infoGroup);
 
-                //Information elements
-                ArrayList<Information> infos = infoGroups.get(i).getInformations();
+                //Information elements$
+                ArrayList<InfoObject> infos = infoGroups.get(i).copyAllInformations();
                 for(int j = 0; j < infos.size(); j++) {
                     Element info = doc.createElement("Information");
-                    info.setAttribute("type", "Information");
-                    info.setAttribute("date", String.valueOf(infos.get(j).getDate().getTime()));
-                    info.setAttribute("ease", String.valueOf(infos.get(j).getEase()));
-                    info.setAttribute("amountRepetition", String.valueOf(infos.get(j).getAmountRepetition()));
-                    info.setAttribute("oldDate", String.valueOf(infos.get(j).getOldDate().getTime()));
+                    info.setAttribute("type", infos.get(j).getType());
                     info.setAttribute("id", String.valueOf(infos.get(j).getId()));
+                    if(infos.get(j).getType().equals(Imprend.strInfoObjectInfo)) {
+                        //Only when Information
+                        Information information = (Information) infos.get(j);
+                        info.setAttribute("date", String.valueOf(information.getDate().getTime()));
+                        info.setAttribute("oldDate", String.valueOf(information.getOldDate().getTime()));
+                        info.setAttribute("ease", String.valueOf(information.getEase()));
+                        info.setAttribute("amountRepetition", String.valueOf(information.getAmountRepetition()));
+
+                    }
                     info.appendChild(doc.createTextNode(infos.get(j).getInformation()));
                     infoGroup.appendChild(info);
-                }
-
-                //Question-Objects
-                ArrayList<Question> questions = infoGroups.get(i).getQuestions();
-                for(int j = 0; j < questions.size(); j++) {
-                    Element question = doc.createElement("Information");
-                    question.setAttribute("type", "Question");
-                    question.setAttribute("id", String.valueOf(questions.get(j).getId()));
-                    question.appendChild(doc.createTextNode(questions.get(j).getInformation()));
-                    infoGroup.appendChild(question);
                 }
             }
 

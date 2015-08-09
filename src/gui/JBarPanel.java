@@ -44,6 +44,7 @@ public class JBarPanel extends JPanel{
         ActionListener goHome = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
+                imprend.pnlCleanUp();
                 imprend.switchPanel(imprend.strPnlMenu);
             }
         };

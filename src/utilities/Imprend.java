@@ -23,6 +23,7 @@ public class Imprend {
     public Settings settings;
 
     public JAddPanel pnlAdd;
+    public JEditPanel pnlEdit;
     private JPanel pnlMain;
     private JBarPanel pnlBar;
     private JCardPanel pnlCard;
@@ -33,6 +34,11 @@ public class Imprend {
     public final String strPnlSettings = "JSettingsPanel";
     public final String strPnlCard = "JCardPanel";
     public final String strPnlAdd = "JAddPanel";
+    public final String strPnlEdit = "JEditPanel";
+
+    //all String for the different types of InfoObjects
+    public static final String strInfoObjectInfo = "Information";
+    public static final String strInfoObjectQuest = "Question";
 
     private static String currentPanel;     //name of the current panel beeing visible
     private static Map<String, JNavPanel> panels = new HashMap<>();    //map of all panels and their names, to associate them with each other
@@ -82,7 +88,7 @@ public class Imprend {
 
 
         //Set the Panel, which should be displayed first
-        imprend.switchPanel(imprend.pnlMenu.getName());
+        imprend.switchPanel(imprend.strPnlMenu);
     }
 
     public void addPanelToMain(JNavPanel pnl, String strPnl) {
@@ -93,6 +99,13 @@ public class Imprend {
     public void switchPanel(String strPanel) {
         imprend.cd.show(imprend.pnlMain, strPanel);
         currentPanel = strPanel;
+
+        //add here things to be done, when certain panels are loaded
+        switch(strPanel) {
+            case strPnlMenu:
+                imprend.pnlMenu.reloadStackList(imprend);
+                break;
+        }
     }
 
     public void JCardPanel_initNewLearning(QuestionMethod questionMethod) {
@@ -101,10 +114,15 @@ public class Imprend {
     }
 
     public void JMenuPanel_reloadStackList(Imprend imprend) {
+        //This method only is there to allow the pnlAdd to call the reloadStackList()-Method from the pnlMenu
         pnlMenu.reloadStackList(imprend);
     }
 
     public void back() {
         panels.get(currentPanel).back(imprend);
+    }
+
+    public void pnlCleanUp() {
+        panels.get(currentPanel).cleanUp(imprend);
     }
 }

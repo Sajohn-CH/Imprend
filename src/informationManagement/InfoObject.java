@@ -8,8 +8,13 @@ public class InfoObject {
 
     String information;
     int id;
+    private int infoGroupId;        //the id of the InformationGroups the Information belongs to
 
     public InfoObject() {
+        //fill default values
+        information = "";
+        id = -1;
+        infoGroupId = -1;
     }
 
     public String getInformation() {
@@ -27,4 +32,19 @@ public class InfoObject {
     public void setId(int id) {
         this.id = id;
     }
+
+    public String getType () {
+        String name = getClass().getName();
+        String[] array = name.split("\\.");
+        return array[array.length-1];
+    }
+
+    public int getInfoGroupId() {
+        return infoGroupId;
+    }
+
+    public void setInfoGroupId(int infoGroupId) {
+        infoGroupId = infoGroupId;
+    }
+
 }

@@ -3,6 +3,7 @@ package questionMethods;
 import informationManagement.*;
 import informationManagement.Stack;
 import spacingAlgorithms.VerySimpleCard;
+import utilities.Imprend;
 import utilities.Save;
 
 import java.util.*;
@@ -21,11 +22,11 @@ import java.util.*;
 public class QMethCards extends QuestionMethod{
 
     private Stack stack;
-    private ArrayList<InformationGroup> infoGroups = new ArrayList<>();
-    private ArrayList<Integer[]> repCards = new ArrayList<>();   //ArrayList of all cards with a response below 3. The ids are being stored. They will be displayed at the end once again.
+    private ArrayList<Integer> infoGroups = new ArrayList<>();    //ArrayList of all id of all InformationGroups which will be learned
+    private ArrayList<Integer[][]> repCards = new ArrayList<>();   //ArrayList of all cards with a response below 3. The ids are being stored. They will be displayed at the end once again.
     private int infoAsked;  //stores the number of the information (in the ArrayList in the InformationGroup), which act as an answer, to get it again to change date and ease.
     private boolean inRepetition;   //indicates if the cards, with an response below 3 are being repeated.
-    private ArrayList<Integer> idLog;   //ArrayList with the ids of every question and answer, asked in the session (first question then answer, then next question, next answer etc.).
+    private ArrayList<Integer[]> idLog;   //ArrayList with the ids of every question and answer, asked in the session (first question then answer, then next question, next answer etc.). The ids are:[id ofInformationGroup, id of InfoObject]
                                          //It is being used for the back()-method, to be able to redo the last card(s).
     //private InfoObject lastQuestion;         //Last question being asked
     private Information lastInformation;    //Last information, being asked
@@ -68,49 +69,63 @@ public class QMethCards extends QuestionMethod{
 
         //checking if the card is being redone
         if(redo) {
-            card.add(stack.getInfoObjectById(idLog.get(idLog.size() - 4)).getInformation());
-            card.add(stack.getInfoObjectById(idLog.get(idLog.size()-3)).getInformation());
+            card.add(stack.getInfoObjectById(idLog.get(idLog.size() - 4)[0], idLog.get(idLog.size() - 4)[1]).getInformation());
+            card.add(stack.getInfoObjectById(idLog.get(idLog.size() - 3)[0], idLog.get(idLog.size() - 3)[1]).getInformation());
             return card;
         }
 
-        ArrayList<Information> infos = (ArrayList<Information>) infoGroups.get(0).getInformations().clone();
-        ArrayList<Question> questions = (ArrayList<Question>) infoGroups.get(0).getQuestions().clone();
+        ArrayList<InfoObject> infos = (ArrayList<InfoObject>) stack.getInfoGroupById(infoGroups.get(0)).copyAllInformations();
+        ArrayList<Information> informations = new ArrayList<>();
+        ArrayList<Question> questions = new ArrayList<>();
 
+        //Split infos with its InfoObjects Informations and Questions
+        for(int i = 0; i < infos.size(); i++) {
+            switch (infos.get(i).getType()) {
+                case Imprend.strInfoObjectInfo:
+                    informations.add((Information) infos.get(i));
+                    break;
+                case Imprend.strInfoObjectQuest:
+                    questions.add((Question) infos.get(i));
+                    break;
+            }
+        }
+        infos.clear();
 
         //If the infoGroup has no question, all of the Information-Objects must be able to act as an question
         if (questions.size() == 0) {
-            if(infos.size() <= 1) {
+            if(informations.size() <= 1) {
                 //With no Question-Object and only 1 or 0 Information-Object, you can't make a card.
-                return null;
+                card.add("ERROR:Skip");
+                return card;
             }
 
             //get the Information-Object which need to be learned earlier.
-            infoAsked = getEarliestInformationPos(infos);
-            Information info = infos.get(infoAsked);
+            infoAsked = getEarliestInformationPos(informations);
+            Information info = informations.get(infoAsked);
             //First there must be placed the question first in the ArrayList, then the answer
             card.add("");       //this is a palceholder for the question
             card.add(info.getInformation());
             //remove the Information-Object which acts as the Answer, so it won't be choosen as the question
-            infos.remove(infos.indexOf(info));
+            informations.remove(informations.indexOf(info));
             //replace the placeholder through the real question
             Random random = new Random();
-            int posQuest =random.nextInt(infos.size());
-            card.set(0,  infos.get(posQuest).getInformation());
-            idLog.add(infos.get(posQuest).getId());
-            idLog.add(info.getId());
+            int posQuest =random.nextInt(informations.size());
+            card.set(0,  informations.get(posQuest).getInformation());
+            idLog.add(new Integer[]{informations.get(posQuest).getInfoGroupId(), informations.get(posQuest).getId()});
+            idLog.add(new Integer[]{info.getInfoGroupId(), info.getId()});
         } else {
             //There is at least one question
             Random random = new Random();
             int posQuest = random.nextInt(questions.size());
             card.add(questions.get(posQuest).getInformation());
-            infoAsked = getEarliestInformationPos(infos);
-            card.add(infos.get(infoAsked).getInformation());
-            idLog.add(questions.get(posQuest).getId());
-            idLog.add(infos.get(infoAsked).getId());
+            infoAsked = getEarliestInformationPos(informations);
+            card.add(informations.get(infoAsked).getInformation());
+            idLog.add(new Integer[]{questions.get(posQuest).getInfoGroupId(), questions.get(posQuest).getId()});
+            idLog.add(new Integer[]{informations.get(infoAsked).getInfoGroupId(), informations.get(infoAsked).getId()});
 
         }
         //Store the dates, ease and amountRepetition of the Information being asked, for the case the user wants to redo it (redoLastCard())
-        Information info = (Information) stack.getInfoObjectById(idLog.get(idLog.size()-1));
+        Information info = (Information) stack.getInfoObjectById(idLog.get(idLog.size()-1)[0], idLog.get(idLog.size()-1)[1]);
         lastInformation = new Information();
         lastInformation.setDate(info.getDate());
         lastInformation.setOldDate(info.getOldDate());
@@ -129,6 +144,11 @@ public class QMethCards extends QuestionMethod{
         recentlyAddRep = false;
         recentlyAddInfoGrp = false;
 
+        if(response == -1) {
+            //-1 means the last Card had benn skipped (due to an error, e.g. uncomplete card)
+            infoGroups.remove(0);
+            return;
+        }
         if(inRepetition) {
             if(response > 2) {
                 //response > 2 -> card removed
@@ -143,7 +163,7 @@ public class QMethCards extends QuestionMethod{
 
         if(response < 3) {
             //response not that good -> repetition at the end
-            Integer[] repCard = new Integer[2];
+            Integer[][] repCard = new Integer[2][2];
             repCard[0] = idLog.get(idLog.size()-2);
             repCard[1] = idLog.get(idLog.size()-1);
             recentlyAddRep = true;
@@ -159,16 +179,19 @@ public class QMethCards extends QuestionMethod{
 
         if(redo) {
             Information info = (Information) stack.getInfoObjectById(idLog.get(idLog.size()-3));
+            Date date = info.getDate();
             info.setDate(VerySimpleCard.getNextDate(lastInformation.getEase(), lastInformation.getAmountRepetition(), lastInformation.getOldDate(), lastInformation.getDate()));
+            info.setOldDate(date);
             info.setEase(VerySimpleCard.getNewEase(lastInformation.getEase(), response));
             redo = false;
             return;
         }
 
-        //Information info = infoGroups.get(0).getInformations().get(infoAsked);
         Information info = (Information) stack.getInfoObjectById(idLog.get(idLog.size()-1));
         info.increaseAmountRepetition();
+        Date date = info.getDate();
         info.setDate(VerySimpleCard.getNextDate(info.getEase(), info.getAmountRepetition(), info.getOldDate(), info.getDate()));
+        info.setOldDate(date);
         info.setEase(VerySimpleCard.getNewEase(info.getEase(), response));
         infoGroups.remove(0);
     }
@@ -190,9 +213,11 @@ public class QMethCards extends QuestionMethod{
     @Override
     public void redoLastCard() {
         if(inRepetition) {
-            Integer[] repCard = new Integer[2];
-            repCard[0] = stack.getInfoObjectById(idLog.get(idLog.size()-2)).getId();
-            repCard[1] = stack.getInfoObjectById(idLog.get(idLog.size()-2)).getId();
+            Integer[][] repCard = new Integer[2][2];
+            repCard[0][0] = stack.getInfoObjectById(idLog.get(idLog.size()-2)).getInfoGroupId();
+            repCard[0][1] = stack.getInfoObjectById(idLog.get(idLog.size()-2)).getId();
+            repCard[1][0] = stack.getInfoObjectById(idLog.get(idLog.size()-2)).getInfoGroupId();
+            repCard[1][1] = stack.getInfoObjectById(idLog.get(idLog.size()-2)).getId();
             repCards.add(0, repCard);
         } else {
             if(recentlyAddRep) {

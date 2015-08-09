@@ -7,9 +7,13 @@ package informationManagement;
 public class Question extends InfoObject{
     private String question;
     private int id;
+    private int infoGroupId;        //the id of the InformationGroups the Information belongs to
 
     public Question() {
-
+        //fill default values
+        question = "";
+        id = -1;
+        infoGroupId = -1;
     }
 
     public String getInformation() {
@@ -26,5 +30,19 @@ public class Question extends InfoObject{
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public String getQuestion() {
+        return question;
+    }
+
+    @Override
+    public void setInfoGroupId(int infoGroupId) {
+        infoGroupId = infoGroupId;
+    }
+
+    @Override
+    public int getInfoGroupId() {
+        return infoGroupId;
     }
 }
