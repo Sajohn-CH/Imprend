@@ -57,6 +57,9 @@ public class JBarPanel extends JPanel{
             }
         };
 
+        //Fonts
+        lblTitle.setFont(imprend.settings.getTitleFont());
+
         btnBack.addActionListener(goBack);
         btnHome.addActionListener(goHome);
         btnSettings.addActionListener(goSettings);

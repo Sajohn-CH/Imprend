@@ -9,6 +9,7 @@ import utilities.UTF8Control;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 
@@ -31,8 +32,10 @@ public class JCardPanel extends JNavPanel implements MouseListener{
 
     private boolean redo;       //Indicates whether the back-Button just has been pressed, so it can't be pressed two times in a row.
     private boolean justStarted;    //Indicates wheter this is the first card or not, so the back-Button would lead then back to the menu
+
+    ResourceBundle resource;
     public JCardPanel(final Imprend imprend) {
-        final ResourceBundle card = ResourceBundle.getBundle(imprend.settings.getResourceBundles()+".JCardPanelBundle", imprend.settings.getLocale(), new UTF8Control());
+        resource = ResourceBundle.getBundle(imprend.settings.getResourceBundles()+".JCardPanelBundle", imprend.settings.getLocale(), new UTF8Control());
         redo = false;
 
         pnlCenter = new JPanel();
@@ -45,11 +48,11 @@ public class JCardPanel extends JNavPanel implements MouseListener{
 
 
         pnlResponse = new JPanel();
-        btnResp0 = new JButton(card.getString("Resp0"));
-        btnResp1 = new JButton(card.getString("Resp1"));
-        btnResp2 = new JButton(card.getString("Resp2"));
-        btnResp3 = new JButton(card.getString("Resp3"));
-        btnResp4 = new JButton(card.getString("Resp4"));;
+        btnResp0 = new JButton(resource.getString("Resp0"));
+        btnResp1 = new JButton(resource.getString("Resp1"));
+        btnResp2 = new JButton(resource.getString("Resp2"));
+        btnResp3 = new JButton(resource.getString("Resp3"));
+        btnResp4 = new JButton(resource.getString("Resp4"));;
 
         lblAnsw.setVisible(false);
 
@@ -65,7 +68,6 @@ public class JCardPanel extends JNavPanel implements MouseListener{
         pnlResponse.add(btnResp2);
         pnlResponse.add(btnResp3);
         pnlResponse.add(btnResp4);
-
 
         setLayout(new BorderLayout());
         add(pnlCenter, BorderLayout.CENTER);
@@ -150,34 +152,7 @@ public class JCardPanel extends JNavPanel implements MouseListener{
 
         addMouseListener(this);
 
-        //Add KeyBindings
-        Action action0 = new Action0();
-        Action action1 = new Action1();
-        Action action2 = new Action2();
-        Action action3 = new Action3();
-        Action action4 = new Action4();
-        Action actionEnter = new EnterAction();
-        int mapName = JComponent.WHEN_IN_FOCUSED_WINDOW;
-        InputMap imap = getInputMap(mapName);
-        KeyStroke ZeroKey = KeyStroke.getKeyStroke('0');
-        KeyStroke OneKey = KeyStroke.getKeyStroke('1');
-        KeyStroke TwoKey = KeyStroke.getKeyStroke('2');
-        KeyStroke ThreeKey = KeyStroke.getKeyStroke('3');
-        KeyStroke FourKey = KeyStroke.getKeyStroke('4');
-        KeyStroke EnterKey = KeyStroke.getKeyStroke("ENTER");
-        imap.put(ZeroKey, "0");
-        imap.put(OneKey, "1");
-        imap.put(TwoKey, "2");
-        imap.put(ThreeKey, "3");
-        imap.put(FourKey, "4");
-        imap.put(EnterKey, "enter");
-        ActionMap amap = getActionMap();
-        amap.put("0", action0);
-        amap.put("1", action1);
-        amap.put("2", action2);
-        amap.put("3", action3);
-        amap.put("4", action4);
-        amap.put("enter", actionEnter);
+        loadKeyBindings(imprend);
     }
 
     public void initNewLearning(QuestionMethod questMeth) {
@@ -215,7 +190,7 @@ public class JCardPanel extends JNavPanel implements MouseListener{
         }
         //first element of the card ArrayList is the question
         lblQuest.setText(card.get(0));
-        //secon element is the answer
+        //second element is the answer
         lblAnsw.setText(card.get(1));
 
         lblAnsw.setVisible(false);
@@ -227,21 +202,58 @@ public class JCardPanel extends JNavPanel implements MouseListener{
 
     }
 
+    public void loadKeyBindings(Imprend imprend) {
+        //Add KeyBindings
+        Action action0 = new Action0();
+        Action action1 = new Action1();
+        Action action2 = new Action2();
+        Action action3 = new Action3();
+        Action action4 = new Action4();
+        Action actionEnter = new EnterAction();
+        int mapName = JComponent.WHEN_IN_FOCUSED_WINDOW;
+        InputMap imap = getInputMap(mapName);
+
+        String[] keyStrokes = imprend.settings.getKeysForJCardBtns();
+        KeyStroke[] strokes = new KeyStroke[6];
+        for(int i = 0; i < strokes.length; i++) {
+            if(keyStrokes[i].length() == 1) {
+                //the keyStroke should be converted into a char. It is a letter and not a key like "ENTER"
+                strokes[i] = KeyStroke.getKeyStroke(keyStrokes[i].charAt(0));
+            } else {
+                //the String stays a string
+                strokes[i] = KeyStroke.getKeyStroke(keyStrokes[i]);
+            }
+        }
+        imap.put(strokes[0], "0");
+        imap.put(strokes[1], "1");
+        imap.put(strokes[2], "2");
+        imap.put(strokes[3], "3");
+        imap.put(strokes[4], "4");
+        imap.put(strokes[5], "enter");
+        ActionMap amap = getActionMap();
+        amap.put("0", action0);
+        amap.put("1", action1);
+        amap.put("2", action2);
+        amap.put("3", action3);
+        amap.put("4", action4);
+        amap.put("enter", actionEnter);
+    }
+
     //Method from the parentclass JNavPanel
     @Override
-    public void back(Imprend imprend) {
+    public boolean back(Imprend imprend) {
         //undo the last response
 
         if(justStarted) {
-            imprend.switchPanel(imprend.strPnlMenu);
+            return true;
         }
         if(!redo) {
             questMeth.redoLastCard();
             nextCard();
             redo = true;
-            return;
+            return false;
         }
-
+        return false;
     }
 
     //Methods from the MouseListener

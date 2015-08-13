@@ -26,15 +26,17 @@ import java.util.ResourceBundle;
  */
 public class JEditPanel extends JNavPanel{
 
-    DefaultTableModel tblCardsModel;
-    DefaultTableModel tblInfosModel;
-    SimpleDateFormat dateFormat;
-    ResourceBundle edit;
-    InformationGroup lastInfoGroup;     //used in loadTableInfos(InformationGroup infoGroup) to detect changes in the table. It is the InformationGroup the table is currently showing
-    Stack stack;
+    private DefaultTableModel tblCardsModel;
+    private JTable tblCards;
+    private DefaultTableModel tblInfosModel;
+    private JTable tblInfos;
+    private SimpleDateFormat dateFormat;
+    private ResourceBundle edit;
+    private InformationGroup lastInfoGroup;     //used in loadTableInfos(InformationGroup infoGroup) to detect changes in the table. It is the InformationGroup the table is currently showing
+    private Stack stack;
 
 
-    public JEditPanel(Imprend imprend, final Stack stack) {
+    public JEditPanel(final Imprend imprend, final Stack stack) {
         this.stack = stack;
         edit = ResourceBundle.getBundle(imprend.settings.getResourceBundles()+".JEditPanelBundle", imprend.settings.getLocale(), new UTF8Control());
         dateFormat = new SimpleDateFormat("dd.MM.yyyy");
@@ -43,7 +45,7 @@ public class JEditPanel extends JNavPanel{
 
         JPanel pnlCards = new JPanel();
         JScrollPane scrlPnCards = new JScrollPane();
-        final JTable tblCards = new JTable();
+        tblCards = new JTable();
         tblCardsModel = new DefaultTableModel() {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -54,7 +56,7 @@ public class JEditPanel extends JNavPanel{
 
         JPanel pnlInfos = new JPanel();
         JScrollPane scrlPnInfos = new JScrollPane();
-        final JTable tblInfos = new JTable();
+        tblInfos = new JTable();
         tblInfosModel = new DefaultTableModel();
         JComboBox<String> combo = new JComboBox<>();
 
@@ -104,7 +106,7 @@ public class JEditPanel extends JNavPanel{
         ActionListener goDeleteDates = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                int answer = JOptionPane.showConfirmDialog(null, edit.getString("MsgSureDeleteDates"), edit.getString("MsgSure"), JOptionPane.OK_CANCEL_OPTION);
+                int answer = JOptionPane.showConfirmDialog(imprend.frame, edit.getString("MsgSureDeleteDates"), edit.getString("MsgSure"), JOptionPane.OK_CANCEL_OPTION);
                 if(answer == 0) {
                     //set all dates to 0 (0 = never asked/learned)
                     for (int i = 0; i < stack.getAmountInformationGroups(); i++) {
@@ -129,7 +131,7 @@ public class JEditPanel extends JNavPanel{
         ActionListener goDeleteCard = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                int answer = JOptionPane.showConfirmDialog(null, edit.getString("MsgSureDeleteCard"), edit.getString("MsgSure"), JOptionPane.OK_CANCEL_OPTION);
+                int answer = JOptionPane.showConfirmDialog(imprend.frame, edit.getString("MsgSureDeleteCard"), edit.getString("MsgSure"), JOptionPane.OK_CANCEL_OPTION);
                 if(answer == 0) {
                     int index = tblCards.getSelectedRow();
                     tblCards.changeSelection(0, 0, false, false);
@@ -187,6 +189,10 @@ public class JEditPanel extends JNavPanel{
         btnAddInfo.addActionListener(goAddInfo);
         btnAddCard.addActionListener(goAddCard);
 
+        //Fonts
+        lblStack.setFont(imprend.settings.getTitleFont());
+
+        //Layouts
         pnlCards.add(scrlPnCards);
 
         pnlInfos.add(scrlPnInfos);
@@ -377,9 +383,9 @@ public class JEditPanel extends JNavPanel{
     }
 
     @Override
-    public void back(Imprend imprend) {
+    public boolean back(Imprend imprend) {
         cleanUp(imprend);
-        imprend.switchPanel(imprend.strPnlMenu);
+        return true;
     }
 
     @Override
@@ -399,6 +405,11 @@ public class JEditPanel extends JNavPanel{
 
         }
         Save.saveStack(stack);
+    }
+
+    public void setSelection(int infoGroupId, int infoObjectId) {
+        tblCards.changeSelection(infoGroupId, 0, false, false);
+
     }
 }
 

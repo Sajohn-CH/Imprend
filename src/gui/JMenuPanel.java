@@ -84,7 +84,7 @@ public class JMenuPanel extends JNavPanel {
                 QuestionMethod questionMethod;
                 if(lstCards.getSelectedValue() == null) {
                     //Error: No stack had benn choosen
-                    JOptionPane.showMessageDialog(null, menu.getString("MsgNoStackChoosen"), menu.getString("MsgNoStackChoosenShort"), JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(imprend.frame, menu.getString("MsgNoStackChoosen"), menu.getString("MsgNoStackChoosenShort"), JOptionPane.ERROR_MESSAGE);
                     return;
                 }else if (combo.getSelectedItem().equals(general.getString("QMethCards"))) {
                     //QuestionMethod Cards
@@ -93,7 +93,6 @@ public class JMenuPanel extends JNavPanel {
                         imprend.JCardPanel_initNewLearning(questionMethod);
                         imprend.switchPanel(imprend.strPnlCard);
                     } else {
-                        JOptionPane.showMessageDialog(null, menu.getString("MsgStackNoCardsToLearn"), menu.getString("MsgStackNoCardsToLearnShort"), JOptionPane.OK_OPTION);
                     }
                 } else {
                     //add other QuestionMethod types here
@@ -104,13 +103,14 @@ public class JMenuPanel extends JNavPanel {
         ActionListener goAdd = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                String stackName = JOptionPane.showInputDialog(null, menu.getString("MsgStackName"));
-                if(stackName.equals("") || stackName.equals(null)) {
+                String stackName = JOptionPane.showInputDialog(imprend.frame, menu.getString("MsgStackName"));
+                if (stackName == null){
                     //the given stackname is invalid
-                    if(stackName.equals("")) {
-                        //the user wanted to create a stack with an emtpy name (stackname == null means he clicked cancel)
-                        JOptionPane.showMessageDialog(null, menu.getString("MsgEmptyStackName"), menu.getString("MsgEmptyStackNameShort"), JOptionPane.ERROR_MESSAGE);
-                    }
+                    return;
+                }
+                if(stackName.equals("")) {
+                    //the user wanted to create a stack with an emtpy name (stackname == null means he clicked cancel)
+                    JOptionPane.showMessageDialog(imprend.frame, menu.getString("MsgEmptyStackName"), menu.getString("MsgEmptyStackNameShort"), JOptionPane.ERROR_MESSAGE);
                 } else {
                     //I should later add here some other things to put the stack in the right folders
                     stackName = imprend.settings.getCardsDir().getPath() + File.separator + stackName + ".xml";
@@ -129,7 +129,7 @@ public class JMenuPanel extends JNavPanel {
                 String stackName = lstCards.getSelectedValue();
                 if(stackName == null) {
                     //Error: No stack had been chossen
-                    JOptionPane.showMessageDialog(null, menu.getString("MsgNoStackChoosenToEdit"), menu.getString("MsgNoStackChoosenShort"), JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(imprend.frame, menu.getString("MsgNoStackChoosenToEdit"), menu.getString("MsgNoStackChoosenShort"), JOptionPane.ERROR_MESSAGE);
                 } else {
                     Stack stack = new Stack(stackName);
                     imprend.pnlEdit = new JEditPanel(imprend, stack);
@@ -147,7 +147,7 @@ public class JMenuPanel extends JNavPanel {
                     //Error: No stack had been chossen
                     JOptionPane.showMessageDialog(null, menu.getString("MsgNoStackChoosenShort"), menu.getString("MsgNoStackChoosenShort"), JOptionPane.ERROR_MESSAGE);
                 } else {
-                    int answer = JOptionPane.showConfirmDialog(null, menu.getString("MsgSureDeleteStack"), menu.getString("MsgSure"), JOptionPane.OK_CANCEL_OPTION);
+                    int answer = JOptionPane.showConfirmDialog(imprend.frame, menu.getString("MsgSureDeleteStack"), menu.getString("MsgSure"), JOptionPane.OK_CANCEL_OPTION);
                     if(answer == 0) {
                         Stack stack =  new Stack(stackName);
                         File stackFile = stack.getStackFile();
@@ -165,11 +165,15 @@ public class JMenuPanel extends JNavPanel {
                 String stackName = lstCards.getSelectedValue();
                 if(stackName == null ){
                     //Error: No stack had been chossen
-                    JOptionPane.showMessageDialog(null, menu.getString("MsgNoStackChoosenShort"), menu.getString("MsgNoStackChoosenShort"), JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(imprend.frame, menu.getString("MsgNoStackChoosenShort"), menu.getString("MsgNoStackChoosenShort"), JOptionPane.ERROR_MESSAGE);
                 } else {
                     Stack stack =  new Stack(stackName);
                     //ask for new name;
-                    String newName = JOptionPane.showInputDialog(null, menu.getString("MsgNewName"));
+                    String newName = JOptionPane.showInputDialog(imprend.frame, menu.getString("MsgNewName"));
+                    if(newName == null) {
+                        //User clicked cancel
+                        return;
+                    }
                     //create new stack
                     File stackFile = stack.getStackFile();
                     String pathToStack = stackFile.getParentFile().getPath();
@@ -195,8 +199,8 @@ public class JMenuPanel extends JNavPanel {
     }
 
     @Override
-    public void back(Imprend imprend) {
-        //more back is impossible :)
+    public boolean back(Imprend imprend) {
+        return true;
     }
 
     public void reloadStackList(Imprend imprend) {
@@ -208,6 +212,5 @@ public class JMenuPanel extends JNavPanel {
         }
 
     }
-
 }
 

@@ -25,6 +25,11 @@ public class QuestionMethod {
         //Is being called by the Panel, "asking the questions" to say how good the user remembered the informations
     }
 
+    public long getPredictedInterval(int response) {
+        //returns the predicted interval (when the card will be asked the next time) for the given answer
+        return 0;
+    }
+
     public void stackFinished() {
         //Method called by the Panel to say that the stack is finished. So everything can be saved
     }

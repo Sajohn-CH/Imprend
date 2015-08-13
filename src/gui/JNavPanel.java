@@ -13,8 +13,11 @@ public class JNavPanel extends JPanel{
 
     }
 
-    public void back(Imprend imprend) {
-        //The Action which should the done, to redo/undo the last action, or switch to the last saw panel.
+    public boolean back(Imprend imprend) {
+        //Returns true, if Imprend should switch to the last opened panel (when the panel can't undo anything by itself). Should include any actions which the panel needs to do, before being close
+        //e.g. saving
+        //Returns false, when it can perform the going back action itself (when the panel can undo anything by itself).
+        return true;
     }
 
     public void cleanUp(Imprend imprend) {

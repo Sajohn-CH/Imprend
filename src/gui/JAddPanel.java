@@ -9,36 +9,44 @@ import utilities.Save;
 import utilities.UTF8Control;
 
 import javax.swing.*;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
+import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.*;
 
 /**
  * Created by samuel on 03.07.15.
  * Panel to add a new stack
  */
-public class JAddPanel extends JNavPanel{
+public class JAddPanel extends JNavPanel implements MouseListener{
     private Map<Integer, String> infoGroupsOfStack;      //Map with the ids and Information(string) of all Informationgroups (Cards) of this stack, which where already added
     private DefaultListModel<String> lstModel;          //ListModel of lstCards. Is global so the content can be changed in other method (reloadCardsList())
+    private JList lstCards;
+    private Stack stack;
+    private Imprend imprend;
 
     public JAddPanel() {
-        add(new JLabel("Hallo Test"));
     }
 
     public JAddPanel(final Imprend imprend, final Stack stack) {
         final ResourceBundle addPanel = ResourceBundle.getBundle(imprend.settings.getResourceBundles()+".JAddPanelBundle", new UTF8Control());
         infoGroupsOfStack = new HashMap<>();
 
+        this.stack = stack;
+        this.imprend = imprend;
+
         JPanel pnlTop = new JPanel();
         JLabel lblStackName = new JLabel(addPanel.getString("stackName"));
         JLabel lblNameOfStack = new JLabel(stack.getName());
-        //final JTextField tFieldStackName = new JTextField(20);
-        JLabel lblType = new JLabel(addPanel.getString("Type"));
         final JComboBox<String> combo = new JComboBox<>();
         final JButton btnAddCard = new JButton(addPanel.getString("addCard"));
         JButton btnAddStack = new JButton(addPanel.getString("addStack"));
-        JList listCards = new JList();
+        lstCards = new JList();
         JPanel pnlRightSide = new JPanel();
         lstModel = new DefaultListModel<>();
         JScrollPane scrollPane = new JScrollPane();
@@ -47,8 +55,8 @@ public class JAddPanel extends JNavPanel{
         combo.addItem(addPanel.getString("TypeBothCard"));
         //combo.addItem(addPanel.getString("TypeManual"));
 
-        listCards.setModel(lstModel);
-        scrollPane.setViewportView(listCards);
+        lstCards.setModel(lstModel);
+        scrollPane.setViewportView(lstCards);
 
         JPanel pnlInfoGroup = new JPanel();
         JLabel lblComment = new JLabel(addPanel.getString("comment"));
@@ -59,10 +67,14 @@ public class JAddPanel extends JNavPanel{
         final JTextField tFieldSide2 = new JTextField(30);
 
         pnlTop.add(lblStackName);
-        //pnlTop.add(tFieldStackName);
         pnlTop.add(lblNameOfStack);
         pnlTop.add(combo);
 
+        //Fonts
+        lblStackName.setFont(imprend.settings.getTitleFont());
+        lblNameOfStack.setFont(imprend.settings.getTitleFont());
+
+        //Layout
         pnlInfoGroup.setLayout(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
 
@@ -157,7 +169,7 @@ public class JAddPanel extends JNavPanel{
         ActionListener goAddStack = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                if(!(tFieldSide1.equals("") && tFieldSide2.equals(""))) {
+                if(!tFieldSide1.getText().equals("") && !tFieldSide2.getText().equals("")) {
                     btnAddCard.doClick();
                 }
                 Save.saveStack(stack);
@@ -166,9 +178,17 @@ public class JAddPanel extends JNavPanel{
             }
         };
 
+        ActionListener goListCards = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+
+            }
+        };
+
         combo.addActionListener(goCombo);
         btnAddCard.addActionListener(goAddCard);
         btnAddStack.addActionListener(goAddStack);
+        lstCards.addMouseListener(this);
     }
 
     private void reloadCardsList() {
@@ -183,8 +203,38 @@ public class JAddPanel extends JNavPanel{
     }
 
     @Override
-    public void back(Imprend imprend) {
-        imprend.switchPanel(imprend.strPnlMenu);
+    public boolean back(Imprend imprend) {
+        return true;
     }
 
+    @Override
+    public void mouseClicked(MouseEvent mouseEvent) {
+        if(mouseEvent.getClickCount() >= 2 && mouseEvent.getButton() == 1) {
+            //When doubleclick on left mousebutton
+            imprend.pnlEdit = new JEditPanel(imprend, stack);
+            imprend.addPanelToMain(imprend.pnlEdit, imprend.strPnlEdit);
+            imprend.switchPanel(imprend.strPnlEdit);
+            imprend.pnlEdit.setSelection(lstCards.getSelectedIndex(), 0);
+        }
+    }
+
+    @Override
+    public void mousePressed(MouseEvent mouseEvent) {
+
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent mouseEvent) {
+
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent mouseEvent) {
+
+    }
+
+    @Override
+    public void mouseExited(MouseEvent mouseEvent) {
+
+    }
 }

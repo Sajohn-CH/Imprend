@@ -197,6 +197,31 @@ public class QMethCards extends QuestionMethod{
     }
 
     @Override
+    public long getPredictedInterval(int response) {
+        if(inRepetition) {
+            if(response > 2) {
+                Information info = (Information) stack.getInfoObjectById(repCards.get(0)[0]);
+                Date date = info.getDate();
+                Date newDate = VerySimpleCard.getNextDate(info.getEase(), info.getAmountRepetition()+1, info.getOldDate(), info.getDate());
+                Long interval = newDate.getTime() - date.getTime();
+                return interval;
+            } else {
+                return 0;
+            }
+        } else {
+            if(response < 2) {
+                return 0;
+            }
+            Information info = (Information) stack.getInfoObjectById(idLog.get(idLog.size()-1));
+            Date date = info.getDate();
+            Date newDate = VerySimpleCard.getNextDate(info.getEase(), info.getAmountRepetition()+1, info.getOldDate(), info.getDate());
+            Long interval = newDate.getTime() - date.getTime();
+            return interval;
+
+        }
+    }
+
+    @Override
     public void stackFinished() {
         //save the stack, to save the new dates and eases
         Save.saveStack(stack);
