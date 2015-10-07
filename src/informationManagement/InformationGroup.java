@@ -60,7 +60,7 @@ public class InformationGroup {
         //removes an object and looks that all other id, greater than the deleted one are moving up
         if(id >= informations.size()) {
             //id doens't exits
-            System.out.println("ERORO: Id doesn't exits. Can't delete InfoObject");
+            System.out.println("EROROR: Id doesn't exits. Can't delete InfoObject");
             return;
         }
         informations.remove(id);

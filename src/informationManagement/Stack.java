@@ -21,7 +21,7 @@ public class Stack {
         stackFile = new File(stackPath);
         if(stackFile.exists()) {
             //Only load the stack if it exists. So there won't be any errors, when e.g. e new stack is created, which first need to be "filled" with information.
-            infoGroups = Load.loadStack(stackFile);;
+            infoGroups = Load.loadStack(stackFile);
         } else {
             infoGroups = new ArrayList<>();
         }

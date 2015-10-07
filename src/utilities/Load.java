@@ -73,12 +73,14 @@ public class Load {
                         Date oldDate = new Date(Long.valueOf(element2.getAttribute("oldDate")));
                         info.setOldDate(oldDate);
                         info.setId(Integer.valueOf(element2.getAttribute("id")));
+                        info.setGroup(element2.getAttribute("group"));
                         infoGroup.addInformation(info);
                     } else if(element2.getAttribute("type").equals(Imprend.strInfoObjectQuest)) {
                         //it is an Question-Object
                         Question question = new Question();
                         question.setInformation(element2.getTextContent());
                         question.setId(Integer.valueOf(element2.getAttribute("id")));
+                        question.setGroup(element2.getAttribute("group"));
                         infoGroup.addInformation(question);
                     }
                 }

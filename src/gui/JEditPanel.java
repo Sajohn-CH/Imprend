@@ -91,6 +91,7 @@ public class JEditPanel extends JNavPanel{
         tblInfosModel.addColumn(edit.getString("ColumnType"));
         tblInfosModel.addColumn(edit.getString("ColumnInfo"));
         tblInfosModel.addColumn(edit.getString("ColumnDate"));
+        tblInfosModel.addColumn(edit.getString("ColumnGroup"));
         TableColumn typeColumn = tblInfos.getColumnModel().getColumn(0);
         typeColumn.setCellEditor(new DefaultCellEditor(combo));
         ListSelectionListener goTblInfos = new ListSelectionListener() {
@@ -251,7 +252,7 @@ public class JEditPanel extends JNavPanel{
             tblInfosModel.removeRow(i);
         }
 
-        String[] rowData = new String[3];
+        String[] rowData = new String[4];
         for(int i = 0; i < infoGroup.getAmountInformations(); i++) {
             switch(infoGroup.getInfoObjectById(i).getType()) {
                 case Imprend.strInfoObjectInfo:
@@ -269,6 +270,7 @@ public class JEditPanel extends JNavPanel{
                     break;
             }
             rowData[1] = infoGroup.getInfoObjectById(i).getInformation();
+            rowData[3] = infoGroup.getInfoObjectById(i).getGroup();
             tblInfosModel.addRow(rowData);
         }
         lastInfoGroup = infoGroup;
@@ -331,6 +333,9 @@ public class JEditPanel extends JNavPanel{
 
                         }
                     }
+                }
+                if(!lastInfoGroup.getInfoObjectById(i).getGroup().equals(tblInfosModel.getValueAt(i, 3))) {
+                    lastInfoGroup.getInfoObjectById(i).setGroup(String.valueOf(tblInfosModel.getValueAt(i, 3)));
                 }
             }
             /*

@@ -19,8 +19,9 @@ import java.util.ResourceBundle;
  */
 public class JCardPanel extends JNavPanel implements MouseListener{
 
-    QuestionMethod questMeth;
+    private QuestionMethod questMeth;
 
+    private CardLayout cd;
     private JLabel lblQuest;
     private JLabel lblAnsw;
     private JPanel pnlFinish;
@@ -33,7 +34,7 @@ public class JCardPanel extends JNavPanel implements MouseListener{
     private boolean redo;       //Indicates whether the back-Button just has been pressed, so it can't be pressed two times in a row.
     private boolean justStarted;    //Indicates wheter this is the first card or not, so the back-Button would lead then back to the menu
 
-    ResourceBundle resource;
+    private ResourceBundle resource;
     public JCardPanel(final Imprend imprend) {
         resource = ResourceBundle.getBundle(imprend.settings.getResourceBundles()+".JCardPanelBundle", imprend.settings.getLocale(), new UTF8Control());
         redo = false;
@@ -42,9 +43,9 @@ public class JCardPanel extends JNavPanel implements MouseListener{
         lblQuest = new JLabel();
         lblAnsw = new JLabel();
 
-        pnlFinish = new JPanel(new GridLayout(2,1));
-        JLabel lblFinish = new JLabel("Finished");  //need to transfer ro ResourceBundle; Label not used at the moment
-        btnMenu = new JButton("BackTOMeu");  //need to transfer ro ResourceBundle; Button not used at the moment (only as btnMenu.doClick()
+        pnlFinish = new JPanel();
+        JLabel lblFinish = new JLabel(resource.getString("StackFinished"));
+        btnMenu = new JButton(resource.getString("backToMenu"));
 
 
         pnlResponse = new JPanel();
@@ -69,9 +70,17 @@ public class JCardPanel extends JNavPanel implements MouseListener{
         pnlResponse.add(btnResp3);
         pnlResponse.add(btnResp4);
 
-        setLayout(new BorderLayout());
-        add(pnlCenter, BorderLayout.CENTER);
-        add(pnlResponse, BorderLayout.PAGE_END);
+        JPanel pnlRunning = new JPanel();
+        pnlRunning.setLayout(new BorderLayout());
+        pnlRunning.add(pnlCenter, BorderLayout.CENTER);
+        pnlRunning.add(pnlResponse, BorderLayout.PAGE_END);
+
+
+        cd = new CardLayout();
+        setLayout(cd);
+        add(pnlRunning, "pnlRunning");
+        add(pnlFinish, "pnlFinish");
+        cd.show(this, "pnlRunning");
 
         //ActionListeners
         ActionListener goMenu = new ActionListener() {
@@ -151,6 +160,7 @@ public class JCardPanel extends JNavPanel implements MouseListener{
         btnResp4.setVisible(false);
 
         addMouseListener(this);
+        cd.show(this, "pnlRunning");
 
         loadKeyBindings(imprend);
     }
@@ -177,7 +187,7 @@ public class JCardPanel extends JNavPanel implements MouseListener{
     private void nextCard() {
         justStarted = false;
         ArrayList<String> card = questMeth.getNextCard();
-        //checking if the stack if finished
+        //checking if the stack is finished
         while(card.get(0).equals("ERROR:Skip")){
             questMeth.setResponse(-1);
             card = questMeth.getNextCard();
@@ -185,7 +195,7 @@ public class JCardPanel extends JNavPanel implements MouseListener{
         if(card.size() == 1 && card.get(0).equals("ERROR:lastCard")) {
             //stack is over
             questMeth.stackFinished();
-            btnMenu.doClick();
+            cd.show(this, "pnlFinish");
             return;
         }
         //first element of the card ArrayList is the question

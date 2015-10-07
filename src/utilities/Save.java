@@ -53,12 +53,13 @@ public class Save {
                 infoGroup.setAttribute("id", String.valueOf(infoGroups.get(i).getId()));
                 rootElement.appendChild(infoGroup);
 
-                //Information elements$
+                //Information elements
                 ArrayList<InfoObject> infos = infoGroups.get(i).copyAllInformations();
                 for(int j = 0; j < infos.size(); j++) {
                     Element info = doc.createElement("Information");
                     info.setAttribute("type", infos.get(j).getType());
                     info.setAttribute("id", String.valueOf(infos.get(j).getId()));
+                    info.setAttribute("group", String.valueOf(infos.get(j).getGroup()));
                     if(infos.get(j).getType().equals(Imprend.strInfoObjectInfo)) {
                         //Only when Information
                         Information information = (Information) infos.get(j);
@@ -66,7 +67,6 @@ public class Save {
                         info.setAttribute("oldDate", String.valueOf(information.getOldDate().getTime()));
                         info.setAttribute("ease", String.valueOf(information.getEase()));
                         info.setAttribute("amountRepetition", String.valueOf(information.getAmountRepetition()));
-
                     }
                     info.appendChild(doc.createTextNode(infos.get(j).getInformation()));
                     infoGroup.appendChild(info);

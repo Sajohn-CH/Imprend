@@ -4,11 +4,12 @@ package informationManagement;
  * Created by samuel on 08.07.15.
  * An Parentobject for the Information and Question-Object so it is possible to return either of them within a method.
  */
-public class InfoObject {
+public abstract class InfoObject {
 
-    String information;
-    int id;
-    private int infoGroupId;        //the id of the InformationGroups the Information belongs to
+    protected String information;
+    protected int id;
+    protected int infoGroupId;        //the id of the InformationGroups the Information belongs to
+    protected String group;
 
     public InfoObject() {
         //fill default values
@@ -47,4 +48,11 @@ public class InfoObject {
         this.infoGroupId = infoGroupId;
     }
 
+    public void setGroup(String group) {
+        this.group = group;
+    }
+
+    public String getGroup() {
+        return group;
+    }
 }

@@ -51,6 +51,7 @@ public class JMenuPanel extends JNavPanel {
         lstModel = new DefaultListModel<>();
 
         combo.addItem(general.getString("QMethCards"));
+        combo.addItem(general.getString("QMethCardsWritten"));
         //combo.addItem(general.getString("QMethRepetition"));
         //combo.addItem(general.getString("QMethMockTest"));
 
@@ -83,17 +84,21 @@ public class JMenuPanel extends JNavPanel {
             public void actionPerformed(ActionEvent actionEvent) {
                 QuestionMethod questionMethod;
                 if(lstCards.getSelectedValue() == null) {
-                    //Error: No stack had benn choosen
+                    //Error: No stack had been chosen
                     JOptionPane.showMessageDialog(imprend.frame, menu.getString("MsgNoStackChoosen"), menu.getString("MsgNoStackChoosenShort"), JOptionPane.ERROR_MESSAGE);
                     return;
-                }else if (combo.getSelectedItem().equals(general.getString("QMethCards"))) {
+                } else if (combo.getSelectedItem().equals(general.getString("QMethCards"))) {
                     //QuestionMethod Cards
                     questionMethod = new QMethCards(lstCards.getSelectedValue());
-                    if(questionMethod.hasCards()) {
-                        imprend.JCardPanel_initNewLearning(questionMethod);
-                        imprend.switchPanel(imprend.strPnlCard);
-                    } else {
-                    }
+                    //the Panels will handel it themselves when the stack has nothing to learn, they'll show the same thing, as when one finished learning
+                    imprend.JCardPanel_initNewLearning(questionMethod);
+                    imprend.switchPanel(imprend.strPnlCard);
+                } else if(combo.getSelectedItem().equals(general.getString("QMethCardsWritten"))) {
+                    //Write words in QuestionMethod style
+                    questionMethod = new QMethCards(lstCards.getSelectedValue());
+                    //the Panels will handel it themselves when the stack has nothing to learn, they'll show the same thing, as when one finished learning
+                    imprend.switchPanel(imprend.strPnlCardWritten);
+                    imprend.JWrittenCardPanel_initNewLearning(questionMethod);
                 } else {
                     //add other QuestionMethod types here
                 }

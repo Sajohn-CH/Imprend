@@ -26,6 +26,7 @@ public class Imprend {
     private JPanel pnlMain;
     private JBarPanel pnlBar;
     private JCardPanel pnlCard;
+    private JWrittenCardPanel pnlCardWritten;
     private JMenuPanel pnlMenu;
 
     //all Strings for the names of each panel for the cardLayout
@@ -34,6 +35,7 @@ public class Imprend {
     public final String strPnlCard = "JCardPanel";
     public final String strPnlAdd = "JAddPanel";
     public final String strPnlEdit = "JEditPanel";
+    public final String strPnlCardWritten = "pnlCardWritten";
 
     //all String for the different types of InfoObjects
     public static final String strInfoObjectInfo = "Information";
@@ -62,6 +64,7 @@ public class Imprend {
         imprend.pnlMenu = new JMenuPanel(imprend);
         JSettingsPanel pnlSettings = new JSettingsPanel(imprend);
         imprend.pnlCard = new JCardPanel(imprend);
+        imprend.pnlCardWritten = new JWrittenCardPanel(imprend);
         imprend.pnlAdd = new JAddPanel();   //This JAddPanel doesn't get imprend because it is more like a placeholder. If one want to switch to this panel, he sould make a new one, with
                                             //imprend and a stack, which it should fill with content (with: imprend.pnlAdd = new JAddPanel(imprend, stack);
 
@@ -71,6 +74,7 @@ public class Imprend {
         imprend.addPanelToMain(imprend.pnlMenu, imprend.strPnlMenu);
         imprend.addPanelToMain(pnlSettings, imprend.strPnlSettings);
         imprend.addPanelToMain(imprend.pnlCard, imprend.strPnlCard);
+        imprend.addPanelToMain(imprend.pnlCardWritten, imprend.strPnlCardWritten);
 
         WindowListener goClose = new WindowAdapter() {
             @Override
@@ -127,6 +131,11 @@ public class Imprend {
         imprend.pnlCard.initNewLearning(questionMethod);
     }
 
+    public void JWrittenCardPanel_initNewLearning(QuestionMethod questionMethod) {
+        //This method only is there to allow the pnlMenu to call the initNewLearning()-Method from the pnlCardWritten
+        imprend.pnlCardWritten.initNewLearning(questionMethod);
+    }
+
     public void JMenuPanel_reloadStackList(Imprend imprend) {
         //This method only is there to allow the pnlAdd to call the reloadStackList()-Method from the pnlMenu
         pnlMenu.reloadStackList(imprend);
@@ -170,5 +179,6 @@ public class Imprend {
 
     public void loadKeyBindings() {
         pnlCard.loadKeyBindings(imprend);
+        pnlCardWritten.loadKeyBindings(imprend);
     }
 }
