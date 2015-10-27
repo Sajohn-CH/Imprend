@@ -9,7 +9,7 @@ public abstract class InfoObject {
     protected String information;
     protected int id;
     protected int infoGroupId;        //the id of the InformationGroups the Information belongs to
-    protected String group;
+    protected String group = "0";
 
     public InfoObject() {
         //fill default values

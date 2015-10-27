@@ -1,6 +1,9 @@
 package gui;
 
-import informationManagement.*;
+import informationManagement.Information;
+import informationManagement.InformationGroup;
+import informationManagement.Question;
+import informationManagement.Stack;
 import utilities.Imprend;
 import utilities.Save;
 import utilities.UTF8Control;
@@ -13,10 +16,8 @@ import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.ResourceBundle;
 
@@ -112,8 +113,8 @@ public class JEditPanel extends JNavPanel{
                     //set all dates to 0 (0 = never asked/learned)
                     for (int i = 0; i < stack.getAmountInformationGroups(); i++) {
                         for(int j = 0; j < stack.getInfoGroupById(i).getAmountInformations(); j++) {
-                            if(stack.getInfoObjectById(j, i).getType().equals(Imprend.strInfoObjectInfo)) {
-                                Information info = (Information) stack.getInfoObjectById(j, i);
+                            if(stack.getInfoObjectById(i, j).getType().equals(Imprend.strInfoObjectInfo)) {
+                                Information info = (Information) stack.getInfoObjectById(i, j);
                                 info.setDate(new Date(0));
                                 info.setEase(2.5);
                                 info.setAmountRepetition(0);
@@ -163,10 +164,11 @@ public class JEditPanel extends JNavPanel{
                 Information info = new Information();
                 lastInfoGroup.addInformation(info);
                 //fill table with default values
-                String[] rowVector = new String[3];
+                String[] rowVector = new String[4];
                 rowVector[0] = edit.getString("information");
                 rowVector[1] = "";
                 rowVector[2] = edit.getString("neverAsked");
+                rowVector[3] = "";
                 tblInfosModel.addRow(rowVector);
                 tblInfos.changeSelection(tblInfosModel.getRowCount()-1, 1, false, false);
             }

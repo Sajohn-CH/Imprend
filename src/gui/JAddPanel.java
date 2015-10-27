@@ -9,9 +9,6 @@ import utilities.Save;
 import utilities.UTF8Control;
 
 import javax.swing.*;
-import javax.swing.event.ListDataEvent;
-import javax.swing.event.ListDataListener;
-import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -142,16 +139,19 @@ public class JAddPanel extends JNavPanel implements MouseListener{
                 InformationGroup infoGroup = new InformationGroup();
                 Information info1 = new Information();
                 info1.setInformation(tFieldSide2.getText());
+                info1.setGroup("");
                 infoGroup.addInformation(info1);
                 switch (combo.getSelectedIndex()) {
                     case 0:
                         Question question = new Question();
                         question.setInformation(tFieldSide1.getText());
+                        question.setGroup("");
                         infoGroup.addInformation(question);
                         break;
                     case 1:
                         Information info2 = new Information();
-                        info2.setInformation(tFieldSide1.getText());;
+                        info2.setInformation(tFieldSide1.getText());
+                        info2.setGroup("");
                         infoGroup.addInformation(info2);
                         break;
                 }
@@ -175,13 +175,6 @@ public class JAddPanel extends JNavPanel implements MouseListener{
                 Save.saveStack(stack);
                 imprend.JMenuPanel_reloadStackList(imprend);
                 imprend.switchPanel(imprend.strPnlMenu);
-            }
-        };
-
-        ActionListener goListCards = new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-
             }
         };
 

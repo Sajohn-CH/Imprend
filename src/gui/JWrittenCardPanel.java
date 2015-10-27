@@ -1,9 +1,6 @@
 package gui;
 
-import informationManagement.Question;
-import org.omg.CORBA.IMP_LIMIT;
 import questionMethods.QuestionMethod;
-import sun.java2d.opengl.GLXSurfaceData;
 import utilities.Imprend;
 import utilities.UTF8Control;
 
@@ -29,7 +26,11 @@ public class JWrittenCardPanel extends JNavPanel implements ItemListener {
     private CardLayout cd;
     private JLabel lblGrp1;     //the "question"
     private JLabel lblGrp2;     //place to rule out some synonyms. All synonyms staying here can not be the answer
+    private JLabel lblGrp2Res;  //same label as above, for the pnlResult (one label for 2 panels doesn't work)
+    private JLabel lblSynonyms; //label displaying the word synonyms, to lable what the lblGrp2 is showing
     private JTextField tFieldGrp2;      //place to write the answer
+    private JLabel lblNotAnswer;        //display all "wrong answers", meaning synonyms of the asked answer.
+    private JLabel lblDescribeNotAnswer;        //label describing the lblNot answer.
     private JButton btnFinished;        //pressed the finished writting the answer
     private JButton btnNextCard;        //pressed for showing the next Card
     private JPanel pnlCorrectAnswer;                //panel to show the correct answer, used several labels, to be able to color them each
@@ -61,9 +62,13 @@ public class JWrittenCardPanel extends JNavPanel implements ItemListener {
         JPanel pnlRunning = new JPanel(new GridBagLayout());
         lblGrp1 = new JLabel();
         lblGrp2 = new JLabel();
+        lblGrp2Res = new JLabel();
+        lblSynonyms = new JLabel(resource.getString("synonyms")+": ");
         tFieldGrp2 = new JTextField(25);
         btnFinished = new JButton(resource.getString("finished"));
         btnNextCard = new JButton(resource.getString("nextCard"));
+        lblNotAnswer = new JLabel();
+        lblDescribeNotAnswer = new JLabel(resource.getString("notTheAnswer") + ": ");
 
         pnlResult = new JPanel();
         lblLettersWrong = new JLabel(resource.getString("lettersWrong") + ": ");
@@ -85,16 +90,28 @@ public class JWrittenCardPanel extends JNavPanel implements ItemListener {
         c.gridy = 1;
         pnlRunning.add(lblGrp1, c);
 
+        c.gridx = 1;
+        c.gridy = 1;
+        pnlRunning.add(lblSynonyms, c);
+
+        c.gridx = 2;
+        c.gridy = 1;
+        pnlRunning.add(lblGrp2, c);
+
+        c.gridx = 3;
+        c.gridy = 1;
+        pnlRunning.add(lblDescribeNotAnswer, c);
+
+        c.gridx = 4;
+        c.gridy = 1;
+        pnlRunning.add(lblNotAnswer, c);
+
         c.gridx = 0;
         c.gridy = 2;
         pnlRunning.add(tFieldGrp2, c);
 
-        c.gridx = 1;
-        c.gridy = 2;
-        pnlRunning.add(lblGrp2, c);
-
         c.gridx = 0;
-        c.gridy = 4;
+        c.gridy = 3;
         c.gridwidth = 3;
         pnlRunning.add(btnFinished, c);
 
@@ -106,7 +123,7 @@ public class JWrittenCardPanel extends JNavPanel implements ItemListener {
 
         c2.gridx = 1;
         c2.gridy = 1;
-        pnlResult.add(lblGrp2, c2);
+        pnlResult.add(lblGrp2Res, c2);
 
         c2.gridx = 0;
         c2.gridy = 2;
@@ -200,12 +217,6 @@ public class JWrittenCardPanel extends JNavPanel implements ItemListener {
     private void nextCard() {
         //load next card
         justStarted = false;
-        /*btnNextCard.setVisible(false);
-        btnFinished.setVisible(true);
-        tFieldGrp2.setVisible(true);
-        pnlYourAnswer.setVisible(false);
-        pnlCorrectAnswer.setVisible(false);
-        pnlResult.setVisible(false);*/
         cd.show(this, "pnlRunning");
         tFieldGrp2.setText("");
 
@@ -222,9 +233,28 @@ public class JWrittenCardPanel extends JNavPanel implements ItemListener {
             return;
         }
         lblGrp1.setText(card.get(0));
-        if(card.size() > 2) {
+        //add Synonyms
+        lblGrp2.setVisible(false);
+        lblGrp2Res.setVisible(false);
+        lblSynonyms.setVisible(false);
+        if(!card.get(2).equals("")) {
             lblGrp2.setText(card.get(2));
+            lblGrp2Res.setText(card.get(2));
+            //only displaying those, if there are synonyms
+            lblGrp2.setVisible(true);
+            lblGrp2Res.setVisible(true);
+            lblSynonyms.setVisible(true);
         }
+        //add those synonym to the answer
+        lblDescribeNotAnswer.setVisible(false);
+        lblNotAnswer.setVisible(false);
+        if(!card.get(3).equals("")) {
+            lblNotAnswer.setText(card.get(3));
+            //only displaying those, if there are synonyms to the answer
+            lblDescribeNotAnswer.setVisible(true);
+            lblNotAnswer.setVisible(true);
+        }
+
         correctAnswer = card.get(1);
         tFieldGrp2.requestFocusInWindow();
 
@@ -233,12 +263,6 @@ public class JWrittenCardPanel extends JNavPanel implements ItemListener {
     private void showAnswer() {
         response = getResponse();
         //shows the correct answer
-        /*btnFinished.setVisible(false);
-        btnNextCard.setVisible(true);
-        tFieldGrp2.setVisible(false);
-        pnlCorrectAnswer.setVisible(true);
-        pnlYourAnswer.setVisible(true);
-        pnlResult.setVisible(true);*/
         cd.show(this, "pnlResult");
     }
 

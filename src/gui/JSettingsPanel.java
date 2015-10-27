@@ -5,14 +5,10 @@ import utilities.Imprend;
 import utilities.UTF8Control;
 
 import javax.swing.*;
-import javax.swing.plaf.FontUIResource;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Locale;
 import java.util.ResourceBundle;
-import java.util.Scanner;
 
 /**
  * Created by samuel on 30.06.15.

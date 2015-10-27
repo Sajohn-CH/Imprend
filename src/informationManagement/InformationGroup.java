@@ -14,7 +14,6 @@ import java.util.*;
 public class InformationGroup {
 
     private ArrayList<InfoObject> informations;        //All InfoObjects in this InformationGroup. The index of each InfoObject should correspond with it's id.
-    //private ArrayList<Question> questions;              //ALl Questions in this InformationGroup
     private Date youngestDate;                          //The youngest date existing in this InformationGroup. (Which Information should be asked for first)
     private String comment;                             //A comment to this InformationGroup, can by anything. The user will write it
     private int id;                                     //The id of the InformationGroup.

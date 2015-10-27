@@ -1,15 +1,15 @@
 package gui;
 
-import questionMethods.QMethCards;
 import questionMethods.QuestionMethod;
 import utilities.Imprend;
-import utilities.Save;
 import utilities.UTF8Control;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
-import java.text.SimpleDateFormat;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 
@@ -24,6 +24,10 @@ public class JCardPanel extends JNavPanel implements MouseListener{
     private CardLayout cd;
     private JLabel lblQuest;
     private JLabel lblAnsw;
+    private JLabel lblSynonyms;
+    private JLabel lblDescribeSynonyms; //label displaying the word synonyms, to labe/describe  what the lblSynonyms is showing
+    private JLabel lblNotAnswer;        //display all "wrong answers", meaning synonyms of the asked answer.
+    private JLabel lblDescribeNotAnswer;        //label describing the lblNot answer.
     private JPanel pnlFinish;
     private JPanel pnlCenter;
     private JPanel pnlResponse;
@@ -42,6 +46,10 @@ public class JCardPanel extends JNavPanel implements MouseListener{
         pnlCenter = new JPanel();
         lblQuest = new JLabel();
         lblAnsw = new JLabel();
+        lblSynonyms = new JLabel();
+        lblDescribeSynonyms = new JLabel("   " + resource.getString("synonyms") + ": ");
+        lblNotAnswer = new JLabel();
+        lblDescribeNotAnswer = new JLabel("   " + resource.getString("notTheAnswer") + ": ");
 
         pnlFinish = new JPanel();
         JLabel lblFinish = new JLabel(resource.getString("StackFinished"));
@@ -60,9 +68,33 @@ public class JCardPanel extends JNavPanel implements MouseListener{
         pnlFinish.add(lblFinish);
         pnlFinish.add(btnMenu);
 
-        pnlCenter.setLayout(new GridLayout(2, 1));
-        pnlCenter.add(lblQuest);
-        pnlCenter.add(lblAnsw);
+        pnlCenter.setLayout(new GridBagLayout());
+        GridBagConstraints c = new GridBagConstraints();
+
+        c.gridx = 0;
+        c.gridy = 1;
+        c.insets = new Insets(0, 0, 30, 5);
+        pnlCenter.add(lblQuest, c);
+
+        c.gridx = 1;
+        c.gridy = 1;
+        pnlCenter.add(lblDescribeSynonyms, c);
+
+        c.gridx = 2;
+        c.gridy = 1;
+        pnlCenter.add(lblSynonyms, c);
+
+        c.gridx = 3;
+        c.gridy = 1;
+        pnlCenter.add(lblDescribeNotAnswer, c);
+
+        c.gridx = 4;
+        c.gridy = 1;
+        pnlCenter.add(lblNotAnswer, c);
+
+        c.gridx = 0;
+        c.gridy = 2;
+        pnlCenter.add(lblAnsw, c);
 
         pnlResponse.add(btnResp0);
         pnlResponse.add(btnResp1);
@@ -186,6 +218,7 @@ public class JCardPanel extends JNavPanel implements MouseListener{
 
     private void nextCard() {
         justStarted = false;
+        cd.show(this, "pnlRunning");
         ArrayList<String> card = questMeth.getNextCard();
         //checking if the stack is finished
         while(card.get(0).equals("ERROR:Skip")){
@@ -200,6 +233,24 @@ public class JCardPanel extends JNavPanel implements MouseListener{
         }
         //first element of the card ArrayList is the question
         lblQuest.setText(card.get(0));
+        //Add Synonyms to lblSynonyms
+        lblDescribeSynonyms.setVisible(false);
+        lblSynonyms.setVisible(false);
+        if(!card.get(2).equals("")) {
+            lblSynonyms.setText(card.get(2));
+            //only displaying those, if there are synonyms
+            lblDescribeSynonyms.setVisible(true);
+            lblSynonyms.setVisible(true);
+        }
+        //add those synonym to the answer
+        lblDescribeNotAnswer.setVisible(false);
+        lblNotAnswer.setVisible(false);
+        if(!card.get(3).equals("")) {
+            lblNotAnswer.setText(card.get(3));
+            //only displaying those, if there are synonyms to the answer
+            lblDescribeNotAnswer.setVisible(true);
+            lblNotAnswer.setVisible(true);
+        }
         //second element is the answer
         lblAnsw.setText(card.get(1));
 
