@@ -10,8 +10,11 @@ import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 
 /**
- * Created by samuel on 02.07.15.
- * Copied from http://stackoverflow.com/questions/4659929/how-to-use-utf-8-in-resource-properties-with-resourcebundle
+ * Datei wurde von Stackoverflow (http://stackoverflow.com/questions/4659929/how-to-use-utf-8-in-resource-properties-with-resourcebundle
+ * am 02.07.15.) kopiert, um ResourceBundles (in denen alle Strings, die in der Grapischen Oberfäche gebraucht werden, gespeichert werden), zu
+ * ermöglichen, die mit UTF-8 kodierung gelesen werden, damit Umlaute Fehlerlos angezeigt werden. <br>
+ * Erstellt am 02.07.15.
+ * @author BalusC von Stackoverflow
  */
 public class UTF8Control extends ResourceBundle.Control {
     public ResourceBundle newBundle

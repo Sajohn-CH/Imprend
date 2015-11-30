@@ -1,48 +1,18 @@
 package informationManagement;
 
 /**
- * Created by samuel on 30.06.15.
- * Class representing a question. But only a question. It won't be able to act as a answer.
+ * Klasse repräsentiert eine Frage. Das heisst, dass es nicht erfragt werden kann. Es hat keine zusätzlichen Methoden und Attribute im Verlgeich zum {@link InfoObject}.
+ * Diese Klasse exisitiert nur damit man später einfacher etwas nur an der Question ändern kann, ohne das InfoObject zu ändern. <br>
+ * Erstellt am 30.06.15
+ * @author Samuel Martin
  */
+
+ //Created by samuel on 30.06.15.
 public class Question extends InfoObject{
-    //private String question;
-    //private int id;
-    //private int infoGroupId;        //the id of the InformationGroups the Information belongs to
-
+    /**
+     * Konstruktor, ruft nur den Konstruktor von {@link InfoObject} auf.
+     */
     public Question() {
-        //fill default values
-        information = "";
-        id = -1;
-        infoGroupId = -1;
-    }
-
-    public String getInformation() {
-        return information;
-    }
-
-    public void setInformation(String information) {
-        this.information = information;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getQuestion() {
-        return information;
-    }
-
-    @Override
-    public void setInfoGroupId(int infoGroupId) {
-        this.infoGroupId = infoGroupId;
-    }
-
-    @Override
-    public int getInfoGroupId() {
-        return infoGroupId;
+        super();
     }
 }

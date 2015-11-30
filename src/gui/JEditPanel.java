@@ -1,16 +1,14 @@
 package gui;
 
-import informationManagement.Information;
-import informationManagement.InformationGroup;
-import informationManagement.Question;
-import informationManagement.Stack;
+import informationManagement.*;
 import utilities.Imprend;
 import utilities.Save;
-import utilities.UTF8Control;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import java.awt.*;
@@ -22,8 +20,15 @@ import java.util.Date;
 import java.util.ResourceBundle;
 
 /**
- * Created by samuel on 30.07.15.
- * panel to edit stacks
+ * Kindklasse von JNavPanel. Enthält alle Elemmente, die es braucht um einen Stapel zu bearbeiten. Es beinhaltet zwei Tabellen. Die eine zeigt alle InformationGroups eines Stapels.
+ * Die andere zeigt die InfoObjects der InformationGroup, die in der anderen Tabelle ausgewählt wurde. Die InformationGroups können bearbeitet werden. Bei jeder Änderung wird in der Tabelle
+ * eine Methode aufgerufen, die alles auf Änderungen überprüft.
+ * Es können können InformationGroups und InfoObjects gelöscht und hinzugefügt werden.
+ * Auch kann der Lernfortschritt eines Stapels gelöscht werden (hauptsächlich zum Testen gedacht). Es besitzt den Stapel, den es bearbeitet als Attribut, welches
+ * dem Konstruktor übergeben wird.<br>
+ * Erstellt am 30.07.15.
+ * @author Samuel Martin
+ * {@inheritDoc}
  */
 public class JEditPanel extends JNavPanel{
 
@@ -32,14 +37,18 @@ public class JEditPanel extends JNavPanel{
     private DefaultTableModel tblInfosModel;
     private JTable tblInfos;
     private SimpleDateFormat dateFormat;
-    private ResourceBundle edit;
+    private ResourceBundle resource;
     private InformationGroup lastInfoGroup;     //used in loadTableInfos(InformationGroup infoGroup) to detect changes in the table. It is the InformationGroup the table is currently showing
     private Stack stack;
 
-
+    /**
+     * Konstruktor. Initialisiert alle Elemente und ordnet diese an.
+     * @param imprend  Imprend als Schnittstelle um z.B. Einstellungen zu erhalten
+     * @param stack  Stapel, der bearbeitet werden soll.
+     */
     public JEditPanel(final Imprend imprend, final Stack stack) {
         this.stack = stack;
-        edit = ResourceBundle.getBundle(imprend.settings.getResourceBundles()+".JEditPanelBundle", imprend.settings.getLocale(), new UTF8Control());
+        resource = imprend.settings.getResourceBundle();
         dateFormat = new SimpleDateFormat("dd.MM.yyyy");
 
         JLabel lblStack = new JLabel(stack.getName());
@@ -62,53 +71,69 @@ public class JEditPanel extends JNavPanel{
         JComboBox<String> combo = new JComboBox<>();
 
         JPanel pnlTools = new JPanel();
-        JButton btnDeleteDates = new JButton(edit.getString("deleteDates"));
-        final JButton btnDeleteCard = new JButton(edit.getString("deleteCard"));
-        JButton btnDeleteInfo = new JButton(edit.getString("deleteInfo"));
-        final JButton btnAddInfo = new JButton(edit.getString("addInfo"));
-        JButton btnAddCard = new JButton(edit.getString("addCard"));
+        JButton btnDeleteDates = new JButton(resource.getString("deleteDates"));
+        final JButton btnDeleteCard = new JButton(resource.getString("deleteCard"));
+        JButton btnDeleteInfo = new JButton(resource.getString("deleteInfo"));
+        final JButton btnAddInfo = new JButton(resource.getString("addInfo"));
+        JButton btnAddCard = new JButton(resource.getString("addCard"));
 
         tblCards.setModel(tblCardsModel);
         scrlPnCards.setViewportView(tblCards);
-        tblCardsModel.addColumn(edit.getString("ColumnQuest"));
-        tblCardsModel.addColumn(edit.getString("ColumnAnsw"));
+        tblCardsModel.addColumn(resource.getString("ColumnQuest"));
+        tblCardsModel.addColumn(resource.getString("ColumnAnsw"));
         ListSelectionListener goTblCards = new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent listSelectionEvent) {
+                //is being called everytime the user selects something on the tblCards. Is used to change the tblInfos ancordingly to the tblCards, depending which InformationGroup the user
+                //selects on the tblCards. This InformationGroup will be shown at the tblInfos.
                 if(tblCards.getSelectedRow() != -1) {
                     InformationGroup infoGroup = stack.getInfoGroupById(tblCards.getSelectedRow());
-                    checkForChanges();
                     loadTableInfos(infoGroup);
                 }
             }
         };
         tblCards.getSelectionModel().addListSelectionListener(goTblCards);
 
-        combo.addItem(edit.getString("information"));
-        combo.addItem(edit.getString("question"));
+        combo.addItem(resource.getString("information"));
+        combo.addItem(resource.getString("question"));
 
         tblInfos.setModel(tblInfosModel);
         scrlPnInfos.setViewportView(tblInfos);
-        tblInfosModel.addColumn(edit.getString("ColumnType"));
-        tblInfosModel.addColumn(edit.getString("ColumnInfo"));
-        tblInfosModel.addColumn(edit.getString("ColumnDate"));
-        tblInfosModel.addColumn(edit.getString("ColumnGroup"));
+        tblInfosModel.addColumn(resource.getString("ColumnType"));
+        tblInfosModel.addColumn(resource.getString("ColumnInfo"));
+        tblInfosModel.addColumn(resource.getString("ColumnDate"));
+        tblInfosModel.addColumn(resource.getString("ColumnGroup"));
+        //add a JComboBox to the first column, so this will always be used, to edit this column
         TableColumn typeColumn = tblInfos.getColumnModel().getColumn(0);
         typeColumn.setCellEditor(new DefaultCellEditor(combo));
-        ListSelectionListener goTblInfos = new ListSelectionListener() {
+        //Listener to keep track of the changes in the Table of the InformationGroups. This will be activated, everytime somehting changes
+        TableModelListener listener = new TableModelListener() {
             @Override
-            public void valueChanged(ListSelectionEvent listSelectionEvent) {
-                checkForChanges();
-                //loadTableInfos(lastInfoGroup);
+            public void tableChanged(TableModelEvent tableModelEvent) {
+                //is being called everytime something in the tblInfos changes. Then it updates the two tables and search for changes to write them into the stack
+                if(tableModelEvent.getType() == TableModelEvent.UPDATE) { //only when user changed something
+                    //search for chanes, so they can be change in the stack too.
+                    checkForChanges(tableModelEvent.getLastRow());
+                    //update tables
+                    loadTableInfos(lastInfoGroup);
+                    loadTableCards(stack);
+                }
             }
         };
-        //tblInfos.getSelectionModel().addListSelectionListener(goTblInfos);
+
+        //Set sizes of the columns of the table with the InfoObjects
+        tblInfos.getColumnModel().getColumn(0).setPreferredWidth(90);
+        tblInfos.getColumnModel().getColumn(1).setMinWidth(200);
+        tblInfos.getColumnModel().getColumn(2).setPreferredWidth(90);
+        tblInfos.getColumnModel().getColumn(3).setPreferredWidth(50);
+
+        tblInfos.getModel().addTableModelListener(listener);
 
         //ActionListeners
         ActionListener goDeleteDates = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                int answer = JOptionPane.showConfirmDialog(imprend.frame, edit.getString("MsgSureDeleteDates"), edit.getString("MsgSure"), JOptionPane.OK_CANCEL_OPTION);
+                int answer = JOptionPane.showConfirmDialog(imprend.getFrame(), resource.getString("MsgSureDeleteDates"), resource.getString("MsgSure"), JOptionPane.OK_CANCEL_OPTION);
                 if(answer == 0) {
                     //set all dates to 0 (0 = never asked/learned)
                     for (int i = 0; i < stack.getAmountInformationGroups(); i++) {
@@ -133,7 +158,11 @@ public class JEditPanel extends JNavPanel{
         ActionListener goDeleteCard = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                int answer = JOptionPane.showConfirmDialog(imprend.frame, edit.getString("MsgSureDeleteCard"), edit.getString("MsgSure"), JOptionPane.OK_CANCEL_OPTION);
+                if(tblCards.getSelectedRow() == -1) {
+                    //no row => no card was selected to delete
+                    return;
+                }
+                int answer = JOptionPane.showConfirmDialog(imprend.getFrame(), resource.getString("MsgSureDeleteCard"), resource.getString("MsgSure"), JOptionPane.OK_CANCEL_OPTION);
                 if(answer == 0) {
                     int index = tblCards.getSelectedRow();
                     tblCards.changeSelection(0, 0, false, false);
@@ -144,11 +173,12 @@ public class JEditPanel extends JNavPanel{
             }
         };
 
+
         ActionListener goDeleteInfo = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                if(tblCards.getSelectedRow() == -1) {
-                    //no row was selected
+                if(tblCards.getSelectedRow() == -1 || tblInfos.getSelectedRow() == -1) {
+                    //no row => no InfoObject was selected to delete
                     return;
                 }
                 InformationGroup infoGroup = stack.getInfoGroupById(tblCards.getSelectedRow());
@@ -165,9 +195,9 @@ public class JEditPanel extends JNavPanel{
                 lastInfoGroup.addInformation(info);
                 //fill table with default values
                 String[] rowVector = new String[4];
-                rowVector[0] = edit.getString("information");
+                rowVector[0] = resource.getString("information");
                 rowVector[1] = "";
-                rowVector[2] = edit.getString("neverAsked");
+                rowVector[2] = resource.getString("neverAsked");
                 rowVector[3] = "";
                 tblInfosModel.addRow(rowVector);
                 tblInfos.changeSelection(tblInfosModel.getRowCount()-1, 1, false, false);
@@ -212,7 +242,6 @@ public class JEditPanel extends JNavPanel{
         c.gridx = 0;
         c.gridy = 0;
         c.gridwidth = 2;
-
         add(lblStack, c);
 
         c.gridx = 0;
@@ -227,13 +256,20 @@ public class JEditPanel extends JNavPanel{
         c.gridx = 0;
         c.gridy = 2;
         c.gridwidth = 3;
+        c.ipadx = 0;
         add(pnlTools, c);
 
         loadTableCards(stack);
-
     }
 
     private void loadTableCards(Stack stack) {
+        //saving the position the selection was before deletion the content, to restore the position of the selection later
+        int selectedRow = tblCards.getSelectedRow();
+        //Removing the old content
+        for(int i = tblCardsModel.getRowCount()-1; i >= 0 ; i--) {
+            tblCardsModel.removeRow(i);
+        }
+        //loads all InformationGroups (=Cards) into the table
         String[] rowData = new String[2];
         for(int i = 0; i < stack.getAmountInformationGroups(); i++) {
             //decide whether there is a question or not (not = at least 2 informations)
@@ -245,29 +281,35 @@ public class JEditPanel extends JNavPanel{
             }
             tblCardsModel.addRow(rowData);
         }
+        //resore the selected row
+        if(selectedRow == -1 || selectedRow >= tblCardsModel.getRowCount()) {
+            //if no row was selected before, or the row doesn't exist anymore, the first row will be selected
+            setSelection(0, 0);
+        } else {
+            setSelection(selectedRow, 0);
+        }
     }
 
     private void loadTableInfos(InformationGroup infoGroup) {
-        //loads all the Information and Questions and other stuff form the given InformationGroup into the table
         //Removing the old content
         for(int i = tblInfosModel.getRowCount()-1; i >= 0 ; i--) {
             tblInfosModel.removeRow(i);
         }
-
+        //loads all the Information and Questions and other stuff form the given InformationGroup into the table
         String[] rowData = new String[4];
         for(int i = 0; i < infoGroup.getAmountInformations(); i++) {
             switch(infoGroup.getInfoObjectById(i).getType()) {
                 case Imprend.strInfoObjectInfo:
-                    rowData[0] = edit.getString("information");
+                    rowData[0] = resource.getString("information");
                     Information info = (Information) infoGroup.getInfoObjectById(i);
                     if(info.getDate().getTime() == 0) {
-                        rowData[2] = edit.getString("neverAsked");
+                        rowData[2] = resource.getString("neverAsked");
                     } else {
                         rowData[2] = dateFormat.format(info.getDate());
                     }
                     break;
                 case Imprend.strInfoObjectQuest:
-                    rowData[0] = edit.getString("question");
+                    rowData[0] = resource.getString("question");
                     rowData[2] = "-";
                     break;
             }
@@ -279,44 +321,41 @@ public class JEditPanel extends JNavPanel{
 
     }
 
-    private void checkForChanges() {
-        //Checks for changes made in the table and changes them too in the InformationGroup in the stack, so they can later be save
+    private void checkForChanges(int row) {
+        //Checks for only one change made in the table at a specific row and changes them too in the InformationGroup in the stack, so they can later be save
         if(tblInfosModel.getRowCount() != 0 && lastInfoGroup != null) {
-            for(int i = 0; i < lastInfoGroup.getAmountInformations(); i++) {
-                //Detect if something has changed, if so, save the changes
-                if(tblInfosModel.getValueAt(i, 0).equals(edit.getString("information")) && lastInfoGroup.getInfoObjectById(i).getType().equals(Imprend.strInfoObjectQuest)) {
+            //Detect if something has changed, if so, save the changes
+            if(tblInfosModel.getValueAt(row, 0).equals(resource.getString("information")) && lastInfoGroup.getInfoObjectById(row).getType().equals(Imprend.strInfoObjectQuest)) {
                     //transfrom the Question info an Information
-                    String question = lastInfoGroup.getInfoObjectById(i).getInformation();
-                    int id = lastInfoGroup.getInfoObjectById(i).getId();
+                    String question = lastInfoGroup.getInfoObjectById(row).getInformation();
+                    int id = lastInfoGroup.getInfoObjectById(row).getId();
                     Information info = new Information();
                     info.setInformation(question);
                     info.setDate(new Date(0));
                     info.setEase(2.5);
                     info.setAmountRepetition(0);
                     info.setOldDate(new Date(0));
-                    lastInfoGroup.replaceInfoObject(i, info);
-                }else if(tblInfosModel.getValueAt(i, 0).equals(edit.getString("question")) && lastInfoGroup.getInfoObjectById(i).getType().equals(Imprend.strInfoObjectInfo)) {
+                    lastInfoGroup.replaceInfoObject(row, info);
+                }else if(tblInfosModel.getValueAt(row, 0).equals(resource.getString("question")) && lastInfoGroup.getInfoObjectById(row).getType().equals(Imprend.strInfoObjectInfo)) {
                     //transform the Information into a Question
-                    String information = lastInfoGroup.getInfoObjectById(i).getInformation();
-                    int id = lastInfoGroup.getInfoObjectById(i).getId();
+                    String information = lastInfoGroup.getInfoObjectById(row).getInformation();
+                    int id = lastInfoGroup.getInfoObjectById(row).getId();
                     Question question = new Question();
                     question.setInformation(information);
                     question.setId(id);
-                    lastInfoGroup.replaceInfoObject(i, question);
-                }
-                if(!lastInfoGroup.getInfoObjectById(i).getInformation().equals(tblInfosModel.getValueAt(i, 1))) {
+                    lastInfoGroup.replaceInfoObject(row, question);
+                } else if(!lastInfoGroup.getInfoObjectById(row).getInformation().equals(tblInfosModel.getValueAt(row, 1))) {
                     //Information has changed
-                    lastInfoGroup.getInfoObjectById(i).setInformation(String.valueOf(tblInfosModel.getValueAt(i, 1)));
-                }
-                if(lastInfoGroup.getInfoObjectById(i).getType().equals(Imprend.strInfoObjectInfo)) {
+                    lastInfoGroup.getInfoObjectById(row).setInformation(String.valueOf(tblInfosModel.getValueAt(row, 1)));
+                }else if(lastInfoGroup.getInfoObjectById(row).getType().equals(Imprend.strInfoObjectInfo)) {
                     //Date can only be changed by an Information
-                    Information info = (Information) lastInfoGroup.getInfoObjectById(i);
-                    if(!dateFormat.format(info.getDate()).equals(tblInfosModel.getValueAt(i, 2))) {
+                    Information info = (Information) lastInfoGroup.getInfoObjectById(row);
+                    if(!dateFormat.format(info.getDate()).equals(tblInfosModel.getValueAt(row, 2))) {
                         //Catch the case, the date is 0 (which is being replace by a text in the table) and doesn't get changed.
-                        if(!tblInfosModel.getValueAt(i, 2).equals(edit.getString("neverAsked")) && !info.equals("0")) {
+                        if(!tblInfosModel.getValueAt(row, 2).equals(resource.getString("neverAsked")) && !info.equals("0")) {
                             try {
                                 //to change also the oldDate field, get the difference between the date in the file and the one it was change to.
-                                Date newDate = dateFormat.parse(String.valueOf(tblInfosModel.getValueAt(i, 2)));
+                                Date newDate = dateFormat.parse(String.valueOf(tblInfosModel.getValueAt(row, 2)));
                                 Date fileDate = info.getDate();
                                 Date newOldDate;
                                 if(newDate.before(fileDate)) {
@@ -336,68 +375,30 @@ public class JEditPanel extends JNavPanel{
                         }
                     }
                 }
-                if(!lastInfoGroup.getInfoObjectById(i).getGroup().equals(tblInfosModel.getValueAt(i, 3))) {
-                    lastInfoGroup.getInfoObjectById(i).setGroup(String.valueOf(tblInfosModel.getValueAt(i, 3)));
+                if(!lastInfoGroup.getInfoObjectById(row).getGroup().equals(tblInfosModel.getValueAt(row, 3))) {
+                    lastInfoGroup.getInfoObjectById(row).setGroup(String.valueOf(tblInfosModel.getValueAt(row, 3)));
                 }
-            }
-            /*
-            //Check for added InformationGroups (Cards) or InfoObjects
-            if(tblCardsModel.getRowCount() > stack.getAmountInformationGroups()) {
-                //add InformationGroup
-                //for every added InformationGroup
-                for(int i = 0; i < tblCardsModel.getRowCount()-stack.getAmountInformationGroups(); i++) {
-                    //InformationGroup infoGroup = new InformationGroup();
-                    //stack.addInformationGroup(infoGroup);
-                }
-            }
-            if(tblInfosModel.getRowCount() > lastInfoGroup.getAmountInformations()) {
-                //add InfoObject
-                //for every added InfoObject
-                int amountNewObjects = tblInfosModel.getRowCount()-lastInfoGroup.getAmountInformations();
-                int amountObjectOld = lastInfoGroup.getAmountInformations();
-                for(int i = 0; i < amountNewObjects; i++) {
-                    //check if there is an information
-                    if(tblInfosModel.getValueAt(i+amountObjectOld, 1) == (null) || tblInfosModel.getValueAt(i+amountObjectOld, 1).equals("")) {
-                        return;
-                    }
-                    if(tblInfosModel.getValueAt(i+amountObjectOld, 0).equals(edit.getString("information"))) {
-                        //Information Object
-                        Information info = new Information();
-                        info.setInformation(String.valueOf(tblInfosModel.getValueAt(i+amountObjectOld, 1)));
-                        if(tblInfosModel.getValueAt(i+amountObjectOld, 2) != (null)) {
-                            try {
-                                info.setDate(dateFormat.parse(String.valueOf(tblInfosModel.getValueAt(i+amountObjectOld, 2))));
-                            } catch (ParseException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        info.setOldDate(new Date(0));
-                        info.setEase(2.5);
-                        info.setAmountRepetition(0);
-                        lastInfoGroup.addInformation(info);
-                    } else if(tblInfosModel.getValueAt(i+amountObjectOld, 0).equals(edit.getString("question"))) {
-                        //check if there is an information
-                        if(tblInfosModel.getValueAt(i+amountObjectOld, 1) == (null) || tblInfosModel.getValueAt(i+amountObjectOld, 1).equals("")) {
-                            return;
-                        }
-                        Question question = new Question();
-                        question.setInformation(String.valueOf(tblInfosModel.getValueAt(i+amountObjectOld, 1)));
-                        lastInfoGroup.addInformation(question);
-                    }
-                }
-            }*/
         }
     }
 
+
+    /**
+     * Details siehe {@link JNavPanel#back(Imprend)}.
+     * Gibt immer true zurück, da es nichts selber macht.
+     * @param imprend  Imprend als Schnittstelle um z.B. Einstellungen zu erhalten
+     * @return true
+     */
     @Override
     public boolean back(Imprend imprend) {
-        cleanUp(imprend);
         return true;
     }
 
+    /**
+     * Details siehe {@link JNavPanel#cleanUp(Imprend)}. Speichert alle Veränderungen im Stapel.
+     * @param imprend   Imprend als Schnittstelle um z.B. Einstellungen zu erhalten
+     */
     @Override
     public void cleanUp(Imprend imprend) {
-        checkForChanges();
         //check for empty InformationGroups and empty InfoObjects
         for(int i = stack.getAmountInformationGroups()-1; i > 0; i--) {
             for(int j = 0; j < stack.getInfoGroupById(i).getAmountInformations(); j++) {
@@ -414,8 +415,15 @@ public class JEditPanel extends JNavPanel{
         Save.saveStack(stack);
     }
 
+    /**
+     * Setzt die Auswahl schon auf ein bestimtes InfoObject, so das diese direkt in den zwei Tabellen angezeigt wird.
+     * Dies wird vom {@link JAddPanel} gebraucht.
+     * @param infoGroupId  ID der InformationGroup, die angezeigt werden soll.
+     * @param infoObjectId  ID der InfoObjects, das direkt angezeigt werden soll.
+     */
     public void setSelection(int infoGroupId, int infoObjectId) {
         tblCards.changeSelection(infoGroupId, 0, false, false);
+        tblInfos.changeSelection(infoObjectId, 0, false, false);
 
     }
 }

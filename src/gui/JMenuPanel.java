@@ -1,6 +1,5 @@
 package gui;
 
-import informationManagement.Information;
 import informationManagement.InformationGroup;
 import informationManagement.Stack;
 import questionMethods.QMethCards;
@@ -8,52 +7,59 @@ import questionMethods.QuestionMethod;
 import utilities.Imprend;
 import utilities.Load;
 import utilities.Save;
-import utilities.UTF8Control;
 
 import javax.swing.*;
-import javax.swing.plaf.FileChooserUI;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.ResourceBundle;
 
 /**
- * Created by samuel on 30.06.15.
- * Start"page" of the programm. From here the user can chose what to do. He can start learning and sees the statistics.
+ * Kindklasse von {@link JNavPanel}. Stellt die Startseite/Hauptmenu des Progamms dar. Von hier aus, können Stapel gelernt, erstellt, editiert, gelöscht und erweitert
+ * werden. <br>
+ * Hier wird definiert, welches Panel mit welcher Abfragemethode gestartet wird. Der Benutzer kann dies über eine JComboBox auswählen.<br>
+ * Erstellt am 30.06.15.
+ *
+ * @author Samuel Martin
  */
 public class JMenuPanel extends JNavPanel {
 
     private DefaultListModel<String> lstModel;
+    private ResourceBundle resource;
 
+    /**
+     * Konstruktor. Initialisert alle Elemente des Panels und ordnet diese an.
+     * @param imprend  Imprend als Schnittstelle um z.B. Einstellungen zu erhalten
+     */
     public JMenuPanel(final Imprend imprend) {
-        final ResourceBundle general = ResourceBundle.getBundle(imprend.settings.getResourceBundles()+".GeneralBundle", imprend.settings.getLocale(), new UTF8Control());
-        final ResourceBundle menu = ResourceBundle.getBundle(imprend.settings.getResourceBundles()+".JMenuPanelBundle", imprend.settings.getLocale(), new UTF8Control());
+        resource = imprend.settings.getResourceBundle();
 
         ImageIcon arrowHead = new ImageIcon("resources" + File.separator + "icons" + File.separator + "ArrowHead.png");
         ImageIcon plus = new ImageIcon("resources" + File.separator + "icons" + File.separator + "Plus.png");
         ImageIcon pen = new ImageIcon("resources" + File.separator + "icons" + File.separator + "Pen.png");
-
 
         JPanel pnlStacks = new JPanel();
         JPanel pnlControls = new JPanel();
         JButton btnStart = new JButton(arrowHead);
         JButton btnAdd = new JButton(plus);
         JButton btnEdit = new JButton(pen);
-        JButton btnDeleteStack = new JButton(menu.getString("deleteStack"));
-        JButton btnCopyStack = new JButton(menu.getString("copyStack"));
-        final JComboBox<String> combo = new JComboBox<>();
+        JButton btnDeleteStack = new JButton(resource.getString("deleteStack"));
+        JButton btnCopyStack = new JButton(resource.getString("copyStack"));
+        final JComboBox<String> comboQMeth = new JComboBox<>();
         JScrollPane scrlPane = new JScrollPane();
         final JList<String> lstCards = new JList<>();
         lstModel = new DefaultListModel<>();
 
-        combo.addItem(general.getString("QMethCards"));
-        combo.addItem(general.getString("QMethCardsWritten"));
-        //combo.addItem(general.getString("QMethRepetition"));
-        //combo.addItem(general.getString("QMethMockTest"));
+        //set tooltiptext to describe some gui-elements
+        btnStart.setToolTipText(resource.getString("btnStart"));
+        btnAdd.setToolTipText(resource.getString("btnAdd"));
+        btnEdit.setToolTipText(resource.getString("btnEdit"));
+        comboQMeth.setToolTipText(resource.getString("comboQMeths"));
+
+        comboQMeth.addItem(resource.getString("QMethCards"));
+        comboQMeth.addItem(resource.getString("QMethCardsWritten"));
 
         String[] stacks = Load.getAllObjectPathsIn(imprend.settings.getCardsDir());
         for (int i = 0; i < stacks.length; i++) {
@@ -69,7 +75,7 @@ public class JMenuPanel extends JNavPanel {
         pnlControls.add(btnEdit);
         pnlControls.add(btnCopyStack);
         pnlControls.add(btnDeleteStack);
-        pnlControls.add(combo);
+        pnlControls.add(comboQMeth);
 
         pnlStacks.setLayout(new BorderLayout());
         pnlStacks.add(pnlControls, BorderLayout.PAGE_START);
@@ -85,20 +91,20 @@ public class JMenuPanel extends JNavPanel {
                 QuestionMethod questionMethod;
                 if(lstCards.getSelectedValue() == null) {
                     //Error: No stack had been chosen
-                    JOptionPane.showMessageDialog(imprend.frame, menu.getString("MsgNoStackChoosen"), menu.getString("MsgNoStackChoosenShort"), JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(imprend.getFrame(), resource.getString("MsgNoStackChoosen"), resource.getString("MsgNoStackChoosenShort"), JOptionPane.ERROR_MESSAGE);
                     return;
-                } else if (combo.getSelectedItem().equals(general.getString("QMethCards"))) {
+                } else if (comboQMeth.getSelectedItem().equals(resource.getString("QMethCards"))) {
                     //QuestionMethod Cards
                     questionMethod = new QMethCards(lstCards.getSelectedValue());
                     //the Panels will handel it themselves when the stack has nothing to learn, they'll show the same thing, as when one finished learning
-                    imprend.JCardPanel_initNewLearning(questionMethod);
+                    imprend.getPnlCard().initNewLearning(questionMethod);
                     imprend.switchPanel(imprend.strPnlCard);
-                } else if(combo.getSelectedItem().equals(general.getString("QMethCardsWritten"))) {
+                } else if(comboQMeth.getSelectedItem().equals(resource.getString("QMethCardsWritten"))) {
                     //Write words in QuestionMethod style
                     questionMethod = new QMethCards(lstCards.getSelectedValue());
                     //the Panels will handel it themselves when the stack has nothing to learn, they'll show the same thing, as when one finished learning
                     imprend.switchPanel(imprend.strPnlCardWritten);
-                    imprend.JWrittenCardPanel_initNewLearning(questionMethod);
+                    imprend.getPnlCardWritten().initNewLearning(questionMethod);
                 } else {
                     //add other QuestionMethod types here
                 }
@@ -108,23 +114,41 @@ public class JMenuPanel extends JNavPanel {
         ActionListener goAdd = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                String stackName = JOptionPane.showInputDialog(imprend.frame, menu.getString("MsgStackName"));
-                if (stackName == null){
-                    //the given stackname is invalid
-                    return;
+                String stackName = "";
+                int response = 0;
+                if(lstCards.getSelectedIndex() != -1) {
+                    String selectedStackName = new Stack(lstCards.getSelectedValue()).getName();
+                    //a stack was selected while this button has been pressed -> Ask to create new Stack or to add InformationGroups to the selected stack
+                    String[] options = {resource.getString("createNewStack"), resource.getString("toStack")+" "+selectedStackName+" "+ resource.getString("add"), resource.getString("Cancel")};
+                    response = JOptionPane.showOptionDialog(imprend.getFrame(), resource.getString("MsgNewOrAddToStack"), resource.getString("MsgNewOrAddToStackShort"), JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+                    if(response == 1) {
+                        //add InformationGroups to existing stack
+                       stackName = selectedStackName;
+
+                    }
                 }
-                if(stackName.equals("")) {
-                    //the user wanted to create a stack with an emtpy name (stackname == null means he clicked cancel)
-                    JOptionPane.showMessageDialog(imprend.frame, menu.getString("MsgEmptyStackName"), menu.getString("MsgEmptyStackNameShort"), JOptionPane.ERROR_MESSAGE);
-                } else {
-                    //I should later add here some other things to put the stack in the right folders
+                //if response == null, the user pressed cancel, when he was asked, if he would like to create a new stack, or add to an existing stack
+                if(response != 2) {
+                    if(stackName.equals("")) {
+                        stackName = JOptionPane.showInputDialog(imprend.getFrame(), resource.getString("MsgStackName"));
+                        if (stackName == null) {
+                            //the given stackname is invalid
+                            return;
+                        }
+                        if (stackName.equals("")) {
+                            //the user wanted to create a stack with an emtpy name (stackname == null means he clicked cancel)
+                            JOptionPane.showMessageDialog(imprend.getFrame(), resource.getString("MsgEmptyStackName"), resource.getString("MsgEmptyStackNameShort"), JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+                    }
+
                     stackName = imprend.settings.getCardsDir().getPath() + File.separator + stackName + ".xml";
                     Stack stack = new Stack(stackName);
-                    imprend.pnlAdd = new JAddPanel(imprend, stack);
-                    imprend.addPanelToMain(imprend.pnlAdd, imprend.strPnlAdd);
+                    imprend.setPnlAdd(new JAddPanel(imprend, stack));
+                    imprend.addPanelToMain(imprend.getPnlAdd(), imprend.strPnlAdd);
                     imprend.switchPanel(imprend.strPnlAdd);
-                    System.out.println("...");
                 }
+
             }
         };
 
@@ -134,11 +158,11 @@ public class JMenuPanel extends JNavPanel {
                 String stackName = lstCards.getSelectedValue();
                 if(stackName == null) {
                     //Error: No stack had been chossen
-                    JOptionPane.showMessageDialog(imprend.frame, menu.getString("MsgNoStackChoosenToEdit"), menu.getString("MsgNoStackChoosenShort"), JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(imprend.getFrame(), resource.getString("MsgNoStackChoosenToEdit"), resource.getString("MsgNoStackChoosenShort"), JOptionPane.ERROR_MESSAGE);
                 } else {
                     Stack stack = new Stack(stackName);
-                    imprend.pnlEdit = new JEditPanel(imprend, stack);
-                    imprend.addPanelToMain(imprend.pnlEdit, imprend.strPnlEdit);
+                    imprend.setPnlEdit(new JEditPanel(imprend, stack));
+                    imprend.addPanelToMain(imprend.getPnlEdit(), imprend.strPnlEdit);
                     imprend.switchPanel(imprend.strPnlEdit);
                 }
             }
@@ -150,14 +174,13 @@ public class JMenuPanel extends JNavPanel {
                 String stackName = lstCards.getSelectedValue();
                 if(stackName == null ){
                     //Error: No stack had been chossen
-                    JOptionPane.showMessageDialog(null, menu.getString("MsgNoStackChoosenShort"), menu.getString("MsgNoStackChoosenShort"), JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(null, resource.getString("MsgNoStackChoosenShort"), resource.getString("MsgNoStackChoosenShort"), JOptionPane.ERROR_MESSAGE);
                 } else {
-                    int answer = JOptionPane.showConfirmDialog(imprend.frame, menu.getString("MsgSureDeleteStack"), menu.getString("MsgSure"), JOptionPane.OK_CANCEL_OPTION);
+                    int answer = JOptionPane.showConfirmDialog(imprend.getFrame(), resource.getString("MsgSureDeleteStack"), resource.getString("MsgSure"), JOptionPane.OK_CANCEL_OPTION);
                     if(answer == 0) {
                         Stack stack =  new Stack(stackName);
                         File stackFile = stack.getStackFile();
-                        //stackFile.delete();
-                        stackFile.deleteOnExit();
+                        stackFile.delete();
                     }
                     reloadStackList(imprend);
                 }
@@ -170,11 +193,11 @@ public class JMenuPanel extends JNavPanel {
                 String stackName = lstCards.getSelectedValue();
                 if(stackName == null ){
                     //Error: No stack had been chossen
-                    JOptionPane.showMessageDialog(imprend.frame, menu.getString("MsgNoStackChoosenShort"), menu.getString("MsgNoStackChoosenShort"), JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(imprend.getFrame(), resource.getString("MsgNoStackChoosenShort"), resource.getString("MsgNoStackChoosenShort"), JOptionPane.ERROR_MESSAGE);
                 } else {
                     Stack stack =  new Stack(stackName);
                     //ask for new name;
-                    String newName = JOptionPane.showInputDialog(imprend.frame, menu.getString("MsgNewName"));
+                    String newName = JOptionPane.showInputDialog(imprend.getFrame(), resource.getString("MsgNewName"));
                     if(newName == null) {
                         //User clicked cancel
                         return;
@@ -203,11 +226,28 @@ public class JMenuPanel extends JNavPanel {
 
     }
 
+    /**
+     * Details siehe {@link JNavPanel#back(Imprend)}. Gibt immer true zurück, da Panel nichts selber macht.
+     * @param imprend  Imprend als Schnittstelle um z.B. Einstellungen zu erhalten
+     * @return true
+     */
     @Override
     public boolean back(Imprend imprend) {
         return true;
     }
 
+    /**
+     * Details siehe {@link JNavPanel#cleanUp(Imprend)}. Macht nichts, da es nichts zum speichern gibt.
+     * @param imprend   Imprend als Schnittstelle um z.B. Einstellungen zu erhalten
+     */
+    @Override
+    public void cleanUp(Imprend imprend) {
+    }
+
+    /**
+     * Lädt die Liste mit allen Stapeln neu.
+     * @param imprend  Imprend als Schnittstelle um z.B. Einstellungen zu erhalten
+     */
     public void reloadStackList(Imprend imprend) {
         //reloads the list of all stacks.
         String[] stacks = Load.getAllObjectPathsIn(imprend.settings.getCardsDir());

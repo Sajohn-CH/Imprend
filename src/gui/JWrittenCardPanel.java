@@ -2,7 +2,6 @@ package gui;
 
 import questionMethods.QuestionMethod;
 import utilities.Imprend;
-import utilities.UTF8Control;
 
 import javax.swing.*;
 import java.awt.*;
@@ -14,44 +13,59 @@ import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 /**
- * Created by samuel on 06.10.15.
+ * Kindklasse von {@link JNavPanel}. Es dient dazu Wörter bzw. InfoObjects schriftlich abzufragen. Dies geschieht dadurch, dass zuerst die Frage samt Synonyme angezeigt wird, dann muss der
+ * Benutzer die Antwort in ein Textfeld eintippen. Die Antwort wird dann mit der richtigen Antwort verglichen, daraus wird dann berechnet wie gut der Benutzer die Information erinnern konnte. Dem Benutzer wird
+ * dies angezeigt. Er hat die Möglichkeit die Rückmeldung (wie gut er es konnte) zu verbessern, bevor die nächste Frage angezeigt wird. Es funktioniert sehr ähnlich wie das JCardPanel {@link JCardPanel}
+ * <br> Es gibt zwei verscheidenen Panels. Das pnlRunning ist für das Abfragen zuständig, das pnlResult ist für das Anzeigen der Antwort zuständig. Zwischen den zwei Panels wird mithilfe des Layoutmanagers
+ * CardLayout hin und her gewechselt. Viele Elemente (meistens JLabels) sind doppelt vorhanden, weil sie auf beiden Panels vorkommen.<br>
+ * Erstellt am 06.10.15.
  */
 public class JWrittenCardPanel extends JNavPanel implements ItemListener {
 
 
-    private boolean justStarted;  //Indicates wheter this is the first card or not, so the back-Button would lead then back to the menu
-    private boolean redo;       //Indicates whether the back-Button just has been pressed, so it can't be pressed two times in a row.
+    private boolean justStarted;                    //Indicates wheter this is the first card or not, so the back-Button would lead then back to the menu
+    private boolean redo;                           //Indicates whether the back-Button just has been pressed, so it can't be pressed two times in a row.
     private QuestionMethod questMeth;
+    private CardLayout cd;                          //The CardLayout. Responsible for switching between asking and showing the answer.
 
-    private CardLayout cd;
-    private JLabel lblGrp1;     //the "question"
-    private JLabel lblGrp2;     //place to rule out some synonyms. All synonyms staying here can not be the answer
-    private JLabel lblGrp2Res;  //same label as above, for the pnlResult (one label for 2 panels doesn't work)
-    private JLabel lblSynonyms; //label displaying the word synonyms, to lable what the lblGrp2 is showing
-    private JTextField tFieldGrp2;      //place to write the answer
-    private JLabel lblNotAnswer;        //display all "wrong answers", meaning synonyms of the asked answer.
-    private JLabel lblDescribeNotAnswer;        //label describing the lblNot answer.
-    private JButton btnFinished;        //pressed the finished writting the answer
-    private JButton btnNextCard;        //pressed for showing the next Card
-    private JPanel pnlCorrectAnswer;                //panel to show the correct answer, used several labels, to be able to color them each
-    private ArrayList<JLabel> lblCorrectAnswer;     //labels to show the correct answer
-    private JPanel pnlYourAnswer;                   //panel to show the users answer, used several labels, to be able to color them each
-    private ArrayList<JLabel> lblYourAnswer;        //labels to show the answer of the user
+    private JPanel pnlRunning;                      //Panel used to ask the question
+    private JLabel lblGrp1;                         //the "question"
+    private JLabel lblGrp2;                         //place to rule out some synonyms. All synonyms staying here can not be the answer
+    private JLabel lblSynonyms;                     //label displaying the word synonyms, to lable what the lblGrp2 is showing
+    private JTextField tFieldGrp2;                  //place to write the answer
+    private JLabel lblNotAnswer;                    //display all "wrong answers", meaning synonyms of the asked answer.
+    private JLabel lblDescribeNotAnswer;            //label describing the lblNot answer.
+    private JButton btnFinished;                    //pressed the finished writting the answer
+
+
     private JPanel pnlResult;                       //panel to show the result, including: Wrong letters, which respond this will result in, and the ability to change this.
-    private JLabel lblLettersWrong;                  //label to show how many letters where wrong, description
+    private ArrayList<JLabel> lblCorrectAnswer;     //labels to show the correct answer
+    private JLabel lblCorrectAnswDes;               //label that describes the Labels lblCorrectAnswer
+    private JPanel pnlYourAnswer;                   //panel to show the users answer, used several labels, to be able to color them each, so that every letter is colored
+    private ArrayList<JLabel> lblYourAnswer;        //labels to show the answer of the user
+    private JLabel lblYourAnswDes;                  //label that describes the lblYourAnswer labels
+    private JPanel pnlCorrectAnswer;                //panel to show the correct answer, used several labels, to be able to color them each, so that every letter is colored
+    private JButton btnNextCard;                    //pressed for showing the next Card
+    private JLabel lblGrp2Res;                      //same label as lblGrp2Res, for the pnlResult (one label for 2 panels doesn't work)
+    private JLabel lblLettersWrong;                 //label to show how many letters where wrong, description
     private JLabel lblLettersWrongNum;              //label to show how many letters where wrong, number
     private JLabel lblResponse;                     //label to show the calculated response. description
-    private JLabel lblResponseNum;                     //label to show the calculated response. number
+    private JLabel lblResponseNum;                  //label to show the calculated response. number
     private JButton btnChangeResponse;              //button to change response;
-    private JPanel pnlFinished;                     //panel shwoing when user finished learning
+    private JPanel pnlFinished;                     //panel showing when user finished learning
     private JButton btnMenu;                        //Button to get back to the menu
-    private JComboBox<String> combo;
+    private JComboBox<String> combo;                //combo to change the response
 
-    private ResourceBundle resource;
-    private String correctAnswer;       //representing what the currently correct answer would be
-    private int response;               //representing what the last response was (response = how good the answer was)
+    private ResourceBundle resource;                //ResourceBundle with all Strings for the GUI
+    private String correctAnswer;                   //representing what the currently correct answer would be
+    private int response;                           //representing what the last response was (response = how good the answer was)
+
+    /**
+     * Konstruktor. Initialisiert alle Elemente und ordnet diese an.
+     * @param imprend  Imprend als Schnittstelle um z.B. Einstellungen zu erhalten
+     */
     public JWrittenCardPanel(final Imprend imprend) {
-        resource = ResourceBundle.getBundle(imprend.settings.getResourceBundles() + ".JCardPanelBundle", imprend.settings.getLocale(), new UTF8Control());
+        resource = imprend.settings.getResourceBundle();
         correctAnswer = "";
 
         pnlYourAnswer = new JPanel();
@@ -59,23 +73,25 @@ public class JWrittenCardPanel extends JNavPanel implements ItemListener {
         pnlCorrectAnswer = new JPanel();
         lblCorrectAnswer = new ArrayList<>();
 
-        JPanel pnlRunning = new JPanel(new GridBagLayout());
+        pnlRunning = new JPanel(new GridBagLayout());
         lblGrp1 = new JLabel();
         lblGrp2 = new JLabel();
-        lblGrp2Res = new JLabel();
         lblSynonyms = new JLabel(resource.getString("synonyms")+": ");
         tFieldGrp2 = new JTextField(25);
         btnFinished = new JButton(resource.getString("finished"));
-        btnNextCard = new JButton(resource.getString("nextCard"));
         lblNotAnswer = new JLabel();
         lblDescribeNotAnswer = new JLabel(resource.getString("notTheAnswer") + ": ");
 
         pnlResult = new JPanel();
+        lblGrp2Res = new JLabel();
+        btnNextCard = new JButton(resource.getString("nextCard"));
         lblLettersWrong = new JLabel(resource.getString("lettersWrong") + ": ");
         lblLettersWrongNum = new JLabel();
         lblResponse = new JLabel(" --> " + resource.getString("response") + ": ");
         lblResponseNum = new JLabel();
         btnChangeResponse = new JButton(resource.getString("changeResponse"));
+        lblCorrectAnswDes = new JLabel("richtige Antwort");
+        lblYourAnswDes = new JLabel("Deine Antwort");
         combo = new JComboBox();
         combo.addItem(resource.getString("Resp0"));
         combo.addItem(resource.getString("Resp1"));
@@ -84,7 +100,9 @@ public class JWrittenCardPanel extends JNavPanel implements ItemListener {
         combo.addItem(resource.getString("Resp4"));
         combo.setVisible(false);
         combo.addItemListener(this);
+        lblYourAnswDes.setLabelFor(pnlYourAnswer);
 
+        //pnlRunning
         GridBagConstraints c = new GridBagConstraints();
         c.gridx = 0;
         c.gridy = 1;
@@ -115,17 +133,26 @@ public class JWrittenCardPanel extends JNavPanel implements ItemListener {
         c.gridwidth = 3;
         pnlRunning.add(btnFinished, c);
 
+        //pnlResult
         pnlResult.setLayout(new GridBagLayout());
         GridBagConstraints c2 = new GridBagConstraints();
         c2.gridx = 0;
         c2.gridy = 1;
-        pnlResult.add(pnlYourAnswer, c2);
+        pnlResult.add(lblYourAnswDes, c2);
 
         c2.gridx = 1;
+        c2.gridy = 1;
+        pnlResult.add(pnlYourAnswer, c2);
+
+        c2.gridx = 2;
         c2.gridy = 1;
         pnlResult.add(lblGrp2Res, c2);
 
         c2.gridx = 0;
+        c2.gridy = 2;
+        pnlResult.add(lblCorrectAnswDes, c2);
+
+        c2.gridx = 1;
         c2.gridy = 2;
         pnlResult.add(pnlCorrectAnswer, c2);
 
@@ -369,7 +396,6 @@ public class JWrittenCardPanel extends JNavPanel implements ItemListener {
                         lblCorrectAnswer.get(i).setForeground(Color.red);
                     }
                 }
-                System.out.println();
             } else {
                 for(int i = 0; i < answer.length(); i++) {
                     if (posWrong.contains(i)) {
@@ -397,6 +423,10 @@ public class JWrittenCardPanel extends JNavPanel implements ItemListener {
         return response;
     }
 
+    /**
+     * Startet das Lernen mit der gegebenen Abfragemethode. Die Abfragemethode beinhaltet auch die Karten (bzw. InformationGroup), die abgefragt werden sollen
+     * @param questMeth  Abfragemethode, mit der abgefragt werden soll.
+     */
     public void initNewLearning(QuestionMethod questMeth) {
         //Performs actions, which are needed to first time, a new Learning session is started
         //This can't be in the constructor, because the constructor is being called only once, when the program starts
@@ -407,6 +437,11 @@ public class JWrittenCardPanel extends JNavPanel implements ItemListener {
         tFieldGrp2.requestFocusInWindow();
     }
 
+
+    /**
+     * Lädt die Tastaturbelegung für das Panel.
+     * @param imprend  Imprend als Schnittstelle um z.B. Einstellungen zu erhalten
+     */
     public void loadKeyBindings(Imprend imprend) {
         //Add KeyBindings
         Action actionNext = new ActionNext();
@@ -429,6 +464,11 @@ public class JWrittenCardPanel extends JNavPanel implements ItemListener {
         amap.put("enter", actionNext);
     }
 
+    /**
+     * Überschreibt die Methode des {@link JNavPanel}s. Sorgt dafür, dass die letzt Karte nochmals angezeigt und gelernt werden kann (Macht das letzt Lernen rückgängig).
+     * @param imprend  Imprend als Schnittstelle um z.B. Einstellungen zu erhalten
+     * @return immer false, da es selber die Rückgängig-Aktion ausführt.
+     */
     @Override
     public boolean back(Imprend imprend) {
         if(justStarted) {
@@ -443,9 +483,27 @@ public class JWrittenCardPanel extends JNavPanel implements ItemListener {
         return false;
     }
 
+    /**
+     * Überschreibt Methode der Vaterklasse {@link JNavPanel}. Sorgt dafür das Lernfortschritt gespeichert wird, wenn das Panel geschlossen wird.
+     * @param imprend   Imprend als Schnittstelle um z.B. Einstellungen zu erhalten
+     */
+    @Override
+    public void cleanUp(Imprend imprend) {
+        if(pnlResult.isVisible()) { //save the response, when the user exit at the panel, when the result is showing and he hasn't order the next card
+            questMeth.setResponse(response);
+        }
+        questMeth.stackFinished();
+    }
+
+    /**
+     * Implementiert den ItemListener, der die JComboBox überwacht, bei der man die Rückmeldung auswählen kann.
+     * Er setzt die Rückmeldung (Variable response und entsprechendes Label lblResponseNum) neu, und macht die JComboBox wieder unsichtbar.
+     * Die JComboBox wird nur durch Klicken eines Knopfs sichtbar.
+     * @param itemEvent
+     */
     @Override
     public void itemStateChanged(ItemEvent itemEvent) {
-        //find out wich respond it is, according to the content of the selected item (String)
+        //find out which respond it is, according to the content of the selected item (String)
         response = combo.getSelectedIndex();
         lblResponseNum.setText(String.valueOf(combo.getSelectedItem()));
         combo.setVisible(false);

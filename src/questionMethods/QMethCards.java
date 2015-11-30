@@ -2,24 +2,23 @@ package questionMethods;
 
 import informationManagement.*;
 import informationManagement.Stack;
-import spacingAlgorithms.VerySimpleCard;
+import spacingAlgorithms.SuperMemo2;
 import utilities.Imprend;
 import utilities.Save;
 
 import java.util.*;
 
 /**
- * Created by samuel on 30.06.15.
- * Partly rewritten by samuel on 10.10.15. to make it synonyms and groups compatible
- * This is a simple QuestionMethod for normal Cards, including synonyms and groups
- * It uses the SM-2 algorithm (http://www.supermemo.com/english/ol/sm2.htm), which I slightly modified (less responses)
- * If in an InformationGroup there is atleast one Question, the Question will always be chosen as a question, if there are several, one will be chosen by random.
- *  response:
- * 0 = black out; no idea
- * 1 = incorrect answer
- * 2 = correct answer, but with some difficulties to remember
- * 3 = correct answer, good able to remember
- * 4 = correct answer, instant response
+ * Organisiert das Kartenabfragen für Karten. Es gibt 5 Rückmeldungsmöglichkeiten (Wie gut der Benutzer ein Wort konnte): <br>
+ * 0 = Gar keine Ahnung. <br>
+ * 1 = Falsche Antwort <br>
+ * 2 = Richtige Antwort, aber schwierig zu erinnern <br>
+ * 3 = Richtige Antwort, gut zu erinnern <br>
+ * 4 = Richtige, sofortige Antwort <br>
+ * Zum Berechnen des nächsten Abfragedatums wird ein leicht modifizierte SuperMemo2-Algorithmus gebraucht. Dieser ist in der Klasse {@link SuperMemo2} implementiert. <br>
+ * Erstellt am 30.06.15. Teilweise überarbeitet am 10.10.15. um es mit Synonymen und Gruppen kompatibel zu machen
+ * @author Samuel Martin
+ * {@inheritDoc}
  *
  */
 public class QMethCards extends QuestionMethod{
@@ -40,6 +39,7 @@ public class QMethCards extends QuestionMethod{
     private boolean redo;                       //Indicates whether the current card is one being redone
     private boolean recentlyAddRep;             //Indicates whether the last card has been added to the repCards, because the response wasn't that good.
     private boolean recentlyAddInfosAsked;      //Indicates whether the last card has been added to the infosAsked, because the response was so bad.
+
     public QMethCards(String stackPath) {
         stack = new Stack(stackPath);
         //get all InfoGroups where at least one object must be learned. Date was before now or today.
@@ -74,6 +74,7 @@ public class QMethCards extends QuestionMethod{
                 inRepetition = true;
                 return card;
             }
+            //If there are no cards to repeat anymore, Stack is finished .To communicate this to the panel, a special message/card will be deliverd. The Panel catchs it.
             card.add("ERROR:lastCard");
             return card;
         }
@@ -255,7 +256,7 @@ public class QMethCards extends QuestionMethod{
                 infos.remove(infos.indexOf(info));
                 for(int i = infos.size()-1; i >= 0; i--) {
                     if(infos.get(i).getGroup().equals(info.getGroup())) {
-                        //the asked Information is in the same group as this InfoObject -> it's an synonym to the answe
+                        //the asked Information is in the same group as this InfoObject -> it's an synonym to the answer
                         repCard[3] += infos.get(i).getInformation() + ", ";
                     }
                 }
@@ -271,12 +272,14 @@ public class QMethCards extends QuestionMethod{
         }
 
         if(redo) {
+            //If the user pressed the redo/undo/back button (the one with an arrow to the right), the informations in lastInformation will be used to calculate the values.
+            //lastInformation has been initilised before in getNextCard();
             Information info = (Information) stack.getInfoObjectById(idLog.get(idLog.size()-2)[1]);
             Date date = info.getDate();
             lastInformation.increaseAmountRepetition();
-            info.setDate(VerySimpleCard.getNextDate(lastInformation.getEase(), lastInformation.getAmountRepetition(), lastInformation.getOldDate(), lastInformation.getDate()));
+            info.setDate(SuperMemo2.getNextDate(lastInformation.getEase(), lastInformation.getAmountRepetition(), lastInformation.getOldDate(), lastInformation.getDate()));
             info.setOldDate(date);
-            info.setEase(VerySimpleCard.getNewEase(lastInformation.getEase(), response));
+            info.setEase(SuperMemo2.getNewEase(lastInformation.getEase(), response));
             redo = false;
             return;
         }
@@ -284,19 +287,20 @@ public class QMethCards extends QuestionMethod{
         Information info = (Information) stack.getInfoObjectById(idLog.get(idLog.size()-1)[1]);
         info.increaseAmountRepetition();
         Date date = info.getDate();
-        info.setDate(VerySimpleCard.getNextDate(info.getEase(), info.getAmountRepetition(), info.getOldDate(), info.getDate()));
+        info.setDate(SuperMemo2.getNextDate(info.getEase(), info.getAmountRepetition(), info.getOldDate(), info.getDate()));
         info.setOldDate(date);
-        info.setEase(VerySimpleCard.getNewEase(info.getEase(), response));
+        info.setEase(SuperMemo2.getNewEase(info.getEase(), response));
         infosAsked.remove(0);
     }
 
     @Override
     public long getPredictedInterval(int response) {
+        //returns the predicted intervall for the current information being asked, for the given response
         if(inRepetition) {
             if(response > 2) {
                 Information info = (Information) stack.getInfoObjectById(repCardsId.get(0));
                 Date date = info.getDate();
-                Date newDate = VerySimpleCard.getNextDate(info.getEase(), info.getAmountRepetition()+1, info.getOldDate(), info.getDate());
+                Date newDate = SuperMemo2.getNextDate(info.getEase(), info.getAmountRepetition() + 1, info.getOldDate(), info.getDate());
                 Long interval = newDate.getTime() - date.getTime();
                 return interval;
             } else {
@@ -308,7 +312,7 @@ public class QMethCards extends QuestionMethod{
             }
             Information info = (Information) stack.getInfoObjectById(idLog.get(idLog.size()-1)[1]);
             Date date = info.getDate();
-            Date newDate = VerySimpleCard.getNextDate(info.getEase(), info.getAmountRepetition()+1, info.getOldDate(), info.getDate());
+            Date newDate = SuperMemo2.getNextDate(info.getEase(), info.getAmountRepetition() + 1, info.getOldDate(), info.getDate());
             Long interval = newDate.getTime() - date.getTime();
             return interval;
 
@@ -323,6 +327,7 @@ public class QMethCards extends QuestionMethod{
 
     @Override
     public  boolean hasCards() {
+        //returns if the stack has cards to learn left
         if(infosAsked.size() == 0) {
             return false;
         }
@@ -331,6 +336,7 @@ public class QMethCards extends QuestionMethod{
 
     @Override
     public void redoLastCard() {
+        //is putting the last made card at the place where it will be asked next, so it will be redone.
         if(inRepetition) {
             String[] repCard = new String[4];
             repCard[0] = stack.getInfoObjectById(idLog.get(idLog.size()-1)[0]).getInformation();
@@ -347,7 +353,7 @@ public class QMethCards extends QuestionMethod{
                 infos.remove(infos.indexOf(info));
                 for(int i = infos.size()-1; i >= 0; i--) {
                     if(infos.get(i).getGroup().equals(info.getGroup())) {
-                        //the asked Information is in the same group as this InfoObject -> it's an synonym to the answe
+                        //the asked Information is in the same group as this InfoObject -> it's an synonym to the answer
                         repCard[3] += infos.get(i).getInformation() + ", ";
                     }
                 }

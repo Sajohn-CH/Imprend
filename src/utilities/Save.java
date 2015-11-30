@@ -16,13 +16,19 @@ import java.io.File;
 import java.util.ArrayList;
 
 /**
- * Created by samuel on 30.06.15.
- * Static class with methods to save different files, which the program needs to run. E.g. the files containing the cards.
+ * Sammlung von statischen Methode die benötigt werden um Dateien von Stapeln zu speichern. <br>
+ * Erstellt am 30.06.15.
+ * @author Samuel Martin
  */
 public class Save {
 
+    /**
+     * Speichert den gegeben Stapel in seiner Datei ab. Momentan werden nur .xml-Dateien unterstützt.
+     * @param stack  Zu speichernder Stapel
+     */
     public static void saveStack(Stack stack) {
-        if(stack.getStackFile().getPath().split("\\.")[1].equals("xml")){
+        String[] filePath = stack.getStackFile().getPath().split("\\.");
+        if(filePath[filePath.length-1].equals("xml")){
             //if xml-File
             saveXMLStack(stack);
         }
@@ -61,7 +67,7 @@ public class Save {
                     info.setAttribute("id", String.valueOf(infos.get(j).getId()));
                     info.setAttribute("group", String.valueOf(infos.get(j).getGroup()));
                     if(infos.get(j).getType().equals(Imprend.strInfoObjectInfo)) {
-                        //Only when Information
+                        //attributes, which only an Information-Object has.
                         Information information = (Information) infos.get(j);
                         info.setAttribute("date", String.valueOf(information.getDate().getTime()));
                         info.setAttribute("oldDate", String.valueOf(information.getOldDate().getTime()));

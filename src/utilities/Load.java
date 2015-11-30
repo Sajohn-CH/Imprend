@@ -15,11 +15,17 @@ import java.util.ArrayList;
 import java.util.Date;
 
 /**
- * Created by samuel on 30.06.15.
- * Static class with methods to load different files, which the program needs to run. E.g. the files containing the cards.
+ * Sammlung von statischen Methode, die gebraucht werden um einen Stapel aus einer Datei zu laden. <br>
+ * Erstellt am 30.06.15.
+ * @author Samuel Martin
  */
 public class Load {
 
+    /**
+     * Liefert alle Dateien in einem gegebenen Ordner zurück.
+     * @param dir  Ordner, in dem gesucht werden soll
+     * @return Alle Pfade der Dateien im Ordner
+     */
     public static String[] getAllObjectPathsIn(File dir) {
         //returns all the paths of all the objects in the given directory
         if(!dir.isDirectory()) {
@@ -33,8 +39,14 @@ public class Load {
         return paths;
     }
 
+    /**
+     * Lädt den Stapel aus der gegebenen Datei. Momentan werden nur .xml-Dateien unterstüzt.
+     * @param file  Datei, in der der Stapel gespeichert ist
+     * @return  Alle InformationGroups des Stapels
+     */
     public static ArrayList<InformationGroup> loadStack(File file) {
-        if(file.getPath().split("\\.")[1].equals("xml")){
+        String[] filePath = file.getPath().split("\\.");
+        if(filePath[filePath.length-1].equals("xml")){
             //if xml-File
             return loadXMLStack(file);
         }
@@ -53,16 +65,19 @@ public class Load {
             dBuilder = dbFactory.newDocumentBuilder();
             doc.getDocumentElement().normalize();
 
+            //get List of nodes in the xml-File
             NodeList nList = doc.getElementsByTagName("InformationGroup");
 
             for(int i = 0; i < nList.getLength(); i++) {
                 Element element1 = (Element) nList.item(i);
+                //Create an InformationGroup-Object for an coresponding element in the xml-File and add the Attributes to it.
                 InformationGroup infoGroup = new InformationGroup();
                 infoGroup.setComment(element1.getAttribute("comment"));
                 infoGroup.setId(Integer.valueOf(element1.getAttribute("id")));
                 //Create for every Object in the xml-File a corresponding Object (Information or Question) and add it to the InformationGroup infoGroup
                 for(int j = 0; j < element1.getElementsByTagName("Information").getLength(); j++) {
                     Element element2 = (Element) element1.getElementsByTagName("Information").item(j);
+                    //seperate between an Information-Object and a Question-Object
                     if(element2.getAttribute("type").equals(Imprend.strInfoObjectInfo)) {
                         //it is an Information-Object
                         Information info = new Information();
@@ -92,25 +107,6 @@ public class Load {
             return null;
         }
         return infoGroups;
-
-    }
-
-    private static int getStackIdXML(File file) {
-        //reads the ID of a stack out of the xml-File
-        try {
-            //start reading the xml-File
-            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-            Document doc = dBuilder.parse(file);
-            dBuilder = dbFactory.newDocumentBuilder();
-            doc.getDocumentElement().normalize();
-
-            return Integer.valueOf(doc.getDocumentElement().getAttribute("id"));
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return -1;
-        }
 
     }
 }
