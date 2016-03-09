@@ -4,16 +4,20 @@ import informationManagement.InformationGroup;
 import informationManagement.Stack;
 import questionMethods.QMethCards;
 import questionMethods.QuestionMethod;
+import questionMethods.WordFormationQMeth;
 import utilities.Imprend;
 import utilities.Load;
 import utilities.Save;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 /**
@@ -28,6 +32,9 @@ public class JMenuPanel extends JNavPanel {
 
     private DefaultListModel<String> lstModel;
     private ResourceBundle resource;
+
+    private JTable tblLearned;
+    private DefaultTableModel mdlLearned;
 
     /**
      * Konstruktor. Initialisert alle Elemente des Panels und ordnet diese an.
@@ -60,6 +67,7 @@ public class JMenuPanel extends JNavPanel {
 
         comboQMeth.addItem(resource.getString("QMethCards"));
         comboQMeth.addItem(resource.getString("QMethCardsWritten"));
+        comboQMeth.addItem(resource.getString("WFCards"));
 
         String[] stacks = Load.getAllObjectPathsIn(imprend.settings.getCardsDir());
         for (int i = 0; i < stacks.length; i++) {
@@ -81,8 +89,23 @@ public class JMenuPanel extends JNavPanel {
         pnlStacks.add(pnlControls, BorderLayout.PAGE_START);
         pnlStacks.add(scrlPane, BorderLayout.CENTER);
 
+        //Statistics-Panel
+        JPanel pnlStats = new JPanel();
+        JScrollPane scrlPaneLearned = new JScrollPane();
+        tblLearned = new JTable();
+        mdlLearned = new DefaultTableModel();
+        tblLearned.setModel(mdlLearned);
+        scrlPaneLearned.setViewportView(tblLearned);
+        mdlLearned.addColumn("Date");
+        mdlLearned.addColumn("Amount");
+
+        loadStats();
+
+        pnlStats.add(scrlPaneLearned);
+
         setLayout(new BorderLayout());
         add(pnlStacks, BorderLayout.LINE_START);
+        add(pnlStats, BorderLayout.LINE_END);
 
         //ActionListener
         ActionListener goStart = new ActionListener() {
@@ -105,6 +128,12 @@ public class JMenuPanel extends JNavPanel {
                     //the Panels will handel it themselves when the stack has nothing to learn, they'll show the same thing, as when one finished learning
                     imprend.switchPanel(imprend.strPnlCardWritten);
                     imprend.getPnlCardWritten().initNewLearning(questionMethod);
+                } else if(comboQMeth.getSelectedItem().equals(resource.getString("WFCards"))){
+                    //QuestionMethod Cards
+                    questionMethod = new WordFormationQMeth(lstCards.getSelectedValue());
+                    //the Panels will handel it themselves when the stack has nothing to learn, they'll show the same thing, as when one finished learning
+                    imprend.getPnlCard().initNewLearning(questionMethod);
+                    imprend.switchPanel(imprend.strPnlCard);
                 } else {
                     //add other QuestionMethod types here
                 }
@@ -254,6 +283,24 @@ public class JMenuPanel extends JNavPanel {
         lstModel.removeAllElements();
         for (int i = 0; i < stacks.length; i++) {
             lstModel.addElement(stacks[i]);
+        }
+    }
+
+    /**
+     * Lädt die Tabelle mit der Statistik neu.
+     */
+    public void loadStats() {
+        //First remove everything inside the table
+        for(int i = mdlLearned.getRowCount()-1; i >= 0; i--) {
+            mdlLearned.removeRow(0);
+        }
+        //Fill table with new Values
+        HashMap<String, Integer> learned =  Imprend.statistic.getLearned();
+        for(Map.Entry<String, Integer> entry : learned.entrySet()) {
+            String[] rowData = new String[2];
+            rowData[0] = entry.getKey();
+            rowData[1] = String.valueOf(entry.getValue());
+            mdlLearned.addRow(rowData);
         }
 
     }

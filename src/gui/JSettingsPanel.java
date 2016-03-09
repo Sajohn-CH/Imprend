@@ -75,7 +75,7 @@ public class JSettingsPanel extends JNavPanel {
         }
         comboLang.setSelectedItem(resource.getString("languageName"));
 
-        for(int i = 8; i < 24; i+=2) {
+        for(int i = 8; i < 40; i+=2) {
             comboFontSize.addItem(i);
         }
         comboFontSize.setSelectedItem(imprend.settings.getFontSize());

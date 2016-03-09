@@ -6,13 +6,17 @@ import informationManagement.Question;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.awt.*;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 
 /**
  * Sammlung von statischen Methode, die gebraucht werden um einen Stapel aus einer Datei zu laden. <br>
@@ -108,5 +112,41 @@ public class Load {
         }
         return infoGroups;
 
+    }
+
+    /**
+     * Lädt die Statistike aus der xml-Datei und gibt ein enstprechendes Statistik-Objekt zurück
+     * @return Statistik
+     */
+    public static Statistic loadStats() {
+        File statsFile = new File("resources" + File.separator + "stats.xml");
+        Statistic stats = new Statistic();
+        try {
+            NodeList nodeList = getNodeList(statsFile, "Learned");
+            for(int i = 0; i < nodeList.getLength(); i++) {
+                Element currentElement = (Element) nodeList.item(i);
+                String date = currentElement.getAttribute("date");
+                int amountLearned = Integer.valueOf(currentElement.getTextContent());
+                stats.setLearned(date, amountLearned);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+
+        }
+        return stats;
+    }
+
+
+    private static NodeList getNodeList(File file, String rootElement) throws ParserConfigurationException, IOException, SAXException {
+        //start reading the xml-File
+        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+        Document doc = dBuilder.parse(file);
+        dBuilder = dbFactory.newDocumentBuilder();
+        doc.getDocumentElement().normalize();
+
+        //get List of nodes in the xml-File
+        NodeList nList = doc.getElementsByTagName(rootElement);
+        return nList;
     }
 }

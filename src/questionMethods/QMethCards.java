@@ -23,10 +23,10 @@ import java.util.*;
  */
 public class QMethCards extends QuestionMethod{
 
-    private Stack stack;
-    private ArrayList<Integer[]> infosAsked = new ArrayList<>();    //ArrayList of all ids of all informations which will be learned (and asked)
-    private ArrayList<String[]> repCards = new ArrayList<>();       //ArrayList of all cards with a response below 3. The question, synonyms, the synonyms of the answer and the answer are stored. They will be displayed at the end once again.
-    private ArrayList<Integer[]> repCardsId;                        //ArrayList of all ids of the information, which need to be repeated again at the end.
+    protected Stack stack;
+    protected ArrayList<Integer[]> infosAsked = new ArrayList<>();    //ArrayList of all ids of all informations which will be learned (and asked)
+    protected ArrayList<String[]> repCards = new ArrayList<>();       //ArrayList of all cards with a response below 3. The question, synonyms, the synonyms of the answer and the answer are stored. They will be displayed at the end once again.
+    protected ArrayList<Integer[]> repCardsId;                        //ArrayList of all ids of the information, which need to be repeated again at the end.
     private boolean inRepetition;                                   //indicates if the cards, with an response below 3 are being repeated.
     private ArrayList<Integer[][]> idLog;       //ArrayList with the ids of every question, answer and Synonyms, asked in the session. The ids are:[id ofInformationGroup, id of InfoObject]
                                                 //One Element in the ArrayList looks like this: [id ofInformationGroup, id of InfoObject]       the question

@@ -8,6 +8,7 @@ import javax.swing.plaf.FontUIResource;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -33,6 +34,7 @@ public class Imprend {
      * Variable, die alle Einstellungen des Programms beinhaltet. Siehe {@link Settings}.
      */
     public Settings settings;
+    public static Statistic statistic;
 
     private JAddPanel pnlAdd;
     private JEditPanel pnlEdit;
@@ -67,6 +69,9 @@ public class Imprend {
      */
     public static final String strInfoObjectQuest = "Question";
 
+    /** SimpleDateFormat um einen Datum (ohne Uhrzeit) abzuspeichern. Format: Jahr-Monat-Tag; Bsp: 2016-06-03; 2014-12-24*/
+    public static final SimpleDateFormat dfDate = new SimpleDateFormat("yyyy-MM-dd");
+
     private static String currentPanel;     //name of the current panel beeing visible
     private static Map<String, JNavPanel> panels = new HashMap<>();    //map of all panels and their names, to associate them with each other
     private ArrayList<String> panelLog;     //ArrayList with the order of the last opened panels. (Used for back button). It is used as an Stack
@@ -86,6 +91,7 @@ public class Imprend {
         imprend.cd = new CardLayout();
         imprend.frame = new JFrame();
         imprend.settings = new Settings(new File("resources" + File.separator + "settings.properties"));
+        imprend.statistic = Load.loadStats();
 
         //Load all fonts (for the panels)
         imprend.loadFonts();
@@ -115,6 +121,7 @@ public class Imprend {
                 super.windowClosing(e);
                 //let the currently opened panel do some cleanUp
                 imprend.pnlCleanUp();
+                Save.saveStatistics(imprend.statistic);
 
                 System.exit(0);
             }
@@ -175,6 +182,7 @@ public class Imprend {
         switch(strPanel) {
             case strPnlMenu:
                 imprend.pnlMenu.reloadStackList(imprend);
+                imprend.pnlMenu.loadStats();
                 break;
         }
     }
