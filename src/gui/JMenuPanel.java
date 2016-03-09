@@ -96,8 +96,8 @@ public class JMenuPanel extends JNavPanel {
         mdlLearned = new DefaultTableModel();
         tblLearned.setModel(mdlLearned);
         scrlPaneLearned.setViewportView(tblLearned);
-        mdlLearned.addColumn("Date");
-        mdlLearned.addColumn("Amount");
+        mdlLearned.addColumn(resource.getString("Date"));
+        mdlLearned.addColumn(resource.getString("Amount"));
 
         loadStats();
 

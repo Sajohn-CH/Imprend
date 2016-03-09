@@ -23,10 +23,10 @@ import java.util.*;
  */
 public class QMethCards extends QuestionMethod{
 
-    protected Stack stack;
-    protected ArrayList<Integer[]> infosAsked = new ArrayList<>();    //ArrayList of all ids of all informations which will be learned (and asked)
-    protected ArrayList<String[]> repCards = new ArrayList<>();       //ArrayList of all cards with a response below 3. The question, synonyms, the synonyms of the answer and the answer are stored. They will be displayed at the end once again.
-    protected ArrayList<Integer[]> repCardsId;                        //ArrayList of all ids of the information, which need to be repeated again at the end.
+    private Stack stack;
+    private ArrayList<Integer[]> infosAsked = new ArrayList<>();    //ArrayList of all ids of all informations which will be learned (and asked)
+    private ArrayList<String[]> repCards = new ArrayList<>();       //ArrayList of all cards with a response below 3. The question, synonyms, the synonyms of the answer and the answer are stored. They will be displayed at the end once again.
+    private ArrayList<Integer[]> repCardsId;                        //ArrayList of all ids of the information, which need to be repeated again at the end.
     private boolean inRepetition;                                   //indicates if the cards, with an response below 3 are being repeated.
     private ArrayList<Integer[][]> idLog;       //ArrayList with the ids of every question, answer and Synonyms, asked in the session. The ids are:[id ofInformationGroup, id of InfoObject]
                                                 //One Element in the ArrayList looks like this: [id ofInformationGroup, id of InfoObject]       the question
@@ -263,7 +263,7 @@ public class QMethCards extends QuestionMethod{
             }
             recentlyAddRep = true;
             repCards.add(repCard);
-            repCardsId.add(idLog.get(idLog.size()-1)[0]);
+            repCardsId.add(idLog.get(idLog.size()-1)[1]);
         }
         if (response < 2) {
             //incorrect answer -> will be displayed again directly
@@ -405,6 +405,37 @@ public class QMethCards extends QuestionMethod{
         //Shuffle list, wo it won't be always asked in the same order, the order it was saved and generated the ids.
         Collections.shuffle(ids);
         return ids;
+    }
+
+    /**
+     * Returns the ids of the elements (InfoObjects) of the card which was given by {@link QMethCards#getNextCard()}.
+     * @return ids of last given card.
+     */
+    public ArrayList<Integer[]> getCardId(){
+        ArrayList<Integer[]> ids = new ArrayList<>();
+        if(inRepetition) {
+            //Get ids when the QMeth is repeating
+            //search for the id of the information asked in the idLog to find the other ids
+            for(int i = 0; i < idLog.size(); i++) {
+                if(idLog.get(i)[1][0] == repCardsId.get(0)[0] && idLog.get(i)[1][1] == repCardsId.get(0)[1]) {
+                    for(int j = 0; j < idLog.get(i).length; j++) {
+                        ids.add(idLog.get(i)[j]);
+                    }
+                    break;
+                }
+            }
+        } else {
+            //get the ids from the idLog
+            for(int j = 0; j < idLog.get(idLog.size()-1).length; j++) {
+                ids.add(idLog.get(idLog.size()-1)[j]);
+            }
+        }
+
+        return ids;
+    }
+
+    public Stack getStack() {
+        return stack;
     }
 
 }
